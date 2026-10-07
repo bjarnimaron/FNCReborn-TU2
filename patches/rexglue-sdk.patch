@@ -1,0 +1,1182 @@
+diff --git a/include/rex/graphics/command_processor.h b/include/rex/graphics/command_processor.h
+index da8e432..a6f0956 100644
+--- a/include/rex/graphics/command_processor.h
++++ b/include/rex/graphics/command_processor.h
+@@ -44,6 +44,8 @@ enum class ReadbackResolveMode {
+   kFast,
+   kSome,
+   kFull,
++  // Sync readback, except resolves repeated every frame (see readback_resolve_smart_*).
++  kSmart,
+ };
+ 
+ struct SwapState {
+diff --git a/include/rex/graphics/d3d12/command_processor.h b/include/rex/graphics/d3d12/command_processor.h
+index 96d362b..918ca57 100644
+--- a/include/rex/graphics/d3d12/command_processor.h
++++ b/include/rex/graphics/d3d12/command_processor.h
+@@ -382,8 +382,20 @@ class D3D12CommandProcessor : public CommandProcessor {
+     uint64_t last_used_frame = 0;
+   };
+   void EvictOldReadbackBuffers(std::unordered_map<uint64_t, ReadbackBuffer>& buffer_map);
++  // "smart" readback: number of resolves per frame to each (address, length). A key whose
++  // per-frame count stayed the same for readback_resolve_smart_frames frames is "steady":
++  // each of its per-frame occurrences is read one frame late from its own buffer pair (or
++  // not copied at all with readback_resolve_smart_skip_steady). Anything else, such as
++  // textures the game builds once and reads on the CPU, is read back synchronously.
++  struct ReadbackResolveTracker {
++    uint64_t frame = 0;
++    uint32_t count = 0;
++    uint32_t count_prev = 0;
++    uint32_t steady_frames = 0;
++  };
++  std::unordered_map<uint64_t, ReadbackResolveTracker> readback_resolve_trackers_;
+   static constexpr uint32_t kReadbackBufferSizeIncrement = 16 * 1024 * 1024;
+-  static constexpr size_t kMaxReadbackBuffers = 256;
++  static constexpr size_t kMaxReadbackBuffers = 512;  // smart readback: one pair per pass
+   static constexpr uint64_t kReadbackBufferEvictionAgeFrames = 60;
+   static inline uint32_t AlignReadbackBufferSize(uint32_t size) {
+     if (size < 1 * 1024 * 1024) {
+diff --git a/include/rex/graphics/flags.h b/include/rex/graphics/flags.h
+index 2cf24c4..77833ea 100644
+--- a/include/rex/graphics/flags.h
++++ b/include/rex/graphics/flags.h
+@@ -27,6 +27,8 @@ REXCVAR_DECLARE(bool, resolve_resolution_scale_fill_half_pixel_offset);
+ REXCVAR_DECLARE(bool, draw_resolution_scaled_texture_offsets);
+ REXCVAR_DECLARE(std::string, readback_resolve);
+ REXCVAR_DECLARE(bool, readback_resolve_half_pixel_offset);
++REXCVAR_DECLARE(int32_t, readback_resolve_smart_frames);
++REXCVAR_DECLARE(bool, readback_resolve_smart_skip_steady);
+ REXCVAR_DECLARE(bool, readback_memexport);
+ REXCVAR_DECLARE(bool, readback_memexport_fast);
+ REXCVAR_DECLARE(bool, occlusion_query_enable);
+diff --git a/include/rex/ppc/context.h b/include/rex/ppc/context.h
+index 0ede542..bba3dc3 100644
+--- a/include/rex/ppc/context.h
++++ b/include/rex/ppc/context.h
+@@ -24,6 +24,7 @@
+ #include <simde/x86/avx.h>
+ #include <simde/x86/sse.h>
+ #include <simde/x86/sse4.1.h>
++#include <simde/x86/fma.h>  // fused vmaddfp / vnmsubfp
+ 
+ //=============================================================================
+ // Pack/Unpack Constants (NORMPACKED32 - 2:10:10:10 format)
+diff --git a/include/rex/ppc/function.h b/include/rex/ppc/function.h
+index 611a52f..5c5c74f 100644
+--- a/include/rex/ppc/function.h
++++ b/include/rex/ppc/function.h
+@@ -101,27 +101,30 @@ struct arg_count_t {
+ //=============================================================================
+ 
+ struct ArgTranslator {
+-  // Get integer argument value from register or stack
++  // Get integer argument value from register or stack.
++  // Registers are returned as full 64-bit values: returning only the low 32 bits truncated u64
++  // arguments (e.g. the XUID passed to XamContentAggregateCreateEnumerator, so no saves were
++  // found). 32-bit, pointer and bool arguments are narrowed by the GetValue overloads below.
+   static constexpr uint64_t GetIntegerArgumentValue(const PPCContext& ctx, uint8_t* base,
+                                                     size_t arg) noexcept {
+     if (arg <= 7) {
+       switch (arg) {
+         case 0:
+-          return ctx.r3.u32;
++          return ctx.r3.u64;
+         case 1:
+-          return ctx.r4.u32;
++          return ctx.r4.u64;
+         case 2:
+-          return ctx.r5.u32;
++          return ctx.r5.u64;
+         case 3:
+-          return ctx.r6.u32;
++          return ctx.r6.u64;
+         case 4:
+-          return ctx.r7.u32;
++          return ctx.r7.u64;
+         case 5:
+-          return ctx.r8.u32;
++          return ctx.r8.u64;
+         case 6:
+-          return ctx.r9.u32;
++          return ctx.r9.u64;
+         case 7:
+-          return ctx.r10.u32;
++          return ctx.r10.u64;
+         default:
+           break;
+       }
+@@ -257,7 +260,13 @@ struct ArgTranslator {
+   template <BigEndianType T>
+   static constexpr T GetValue(PPCContext& ctx, uint8_t* base, size_t idx) noexcept {
+     T result;
+-    result.value = static_cast<decltype(result.value)>(GetIntegerArgumentValue(ctx, base, idx));
++    using value_t = decltype(result.value);
++    const uint64_t v = GetIntegerArgumentValue(ctx, base, idx);
++    if constexpr (sizeof(value_t) <= 4) {
++      result.value = static_cast<value_t>(static_cast<uint32_t>(v));
++    } else {
++      result.value = static_cast<value_t>(v);
++    }
+     return result;
+   }
+ 
+@@ -265,7 +274,7 @@ struct ArgTranslator {
+   template <MappedPtrType T>
+   static T GetValue(PPCContext& ctx, uint8_t* base, size_t idx) noexcept {
+     using inner_t = typename mapped_ptr_inner_type<T>::type;
+-    const auto v = GetIntegerArgumentValue(ctx, base, idx);
++    const auto v = static_cast<uint32_t>(GetIntegerArgumentValue(ctx, base, idx));
+     if (!v) {
+       return T(nullptr);
+     }
+@@ -279,6 +288,8 @@ struct ArgTranslator {
+   static constexpr T GetValue(PPCContext& ctx, uint8_t* base, size_t idx) noexcept {
+     if constexpr (is_precise_v<T>) {
+       return static_cast<T>(GetPrecisionArgumentValue(ctx, base, idx));
++    } else if constexpr (sizeof(T) <= 4) {
++      return static_cast<T>(static_cast<uint32_t>(GetIntegerArgumentValue(ctx, base, idx)));
+     } else {
+       return static_cast<T>(GetIntegerArgumentValue(ctx, base, idx));
+     }
+@@ -288,7 +299,7 @@ struct ArgTranslator {
+   template <typename T>
+     requires std::is_pointer_v<T>
+   static constexpr T GetValue(PPCContext& ctx, uint8_t* base, size_t idx) noexcept {
+-    const auto v = GetIntegerArgumentValue(ctx, base, idx);
++    const auto v = static_cast<uint32_t>(GetIntegerArgumentValue(ctx, base, idx));
+     if (!v) {
+       return nullptr;
+     }
+diff --git a/include/rex/thread.h b/include/rex/thread.h
+index 30b207d..2f9cdc4 100644
+--- a/include/rex/thread.h
++++ b/include/rex/thread.h
+@@ -108,6 +108,16 @@ void set_current_thread_name(const std::string_view name);
+ // Yields the current thread to the scheduler. Maybe.
+ void MaybeYield();
+ 
++// Sleep for roughly `us` microseconds without burning a core (Windows:
++// high-resolution waitable timer, ~0.1-0.5 ms granularity).
++void ShortSleepUs(uint32_t us);
++
++// Yield for wait loops. The first 16 calls in a row behave like
++// MaybeYield(); after that each call sleeps ~200 us. The streak resets after a
++// 2 ms gap. SwitchToThread() returns at once on an idle many-core CPU, so plain
++// yield loops spun a whole core each.
++void BackoffYield();
++
+ // Memory barrier (request - may be ignored).
+ void SyncMemory();
+ 
+diff --git a/src/codegen/builders/vector.cpp b/src/codegen/builders/vector.cpp
+index cbdd7f7..d646fc8 100644
+--- a/src/codegen/builders/vector.cpp
++++ b/src/codegen/builders/vector.cpp
+@@ -92,21 +92,24 @@ bool build_vmulfp128(BuilderContext& ctx) {
+ 
+ bool build_vmaddfp(BuilderContext& ctx) {
+   ctx.emit_set_flush_mode(true);
++  // Xenon VMX/VMX128 multiply-add is fused (single rounding), like Xenia's MUL_ADD -> vfmadd.
++  // A separate mul+add rounds twice and can give exact zeros where the console keeps a tiny
++  // residual (0/0 NaNs in animation blending made characters vanish).
+   ctx.println(
+-      "\tsimde_mm_store_ps({}.f32, simde_mm_add_ps(simde_mm_mul_ps(simde_mm_load_ps({}.f32), "
+-      "simde_mm_load_ps({}.f32)), simde_mm_load_ps({}.f32)));",
++      "\tsimde_mm_store_ps({}.f32, simde_mm_fmadd_ps(simde_mm_load_ps({}.f32), "
++      "simde_mm_load_ps({}.f32), simde_mm_load_ps({}.f32)));",
+       ctx.v(ctx.insn.operands[0]), ctx.v(ctx.insn.operands[1]), ctx.v(ctx.insn.operands[2]),
+       ctx.v(ctx.insn.operands[3]));
+   return true;
+ }
+ 
+ bool build_vnmsubfp(BuilderContext& ctx) {
+-  // vnmsubfp: vD = -(vA * vB - vC) - negation done by XOR with sign bit (0x80000000)
++  // vnmsubfp: vD = -(vA * vB - vC) - fused (see vmaddfp above), negation by XOR with the sign bit
+   ctx.emit_set_flush_mode(true);
+   ctx.println(
+       "\tsimde_mm_store_ps({}.f32, "
+-      "simde_mm_xor_ps(simde_mm_sub_ps(simde_mm_mul_ps(simde_mm_load_ps({}.f32), "
+-      "simde_mm_load_ps({}.f32)), simde_mm_load_ps({}.f32)), "
++      "simde_mm_xor_ps(simde_mm_fmsub_ps(simde_mm_load_ps({}.f32), "
++      "simde_mm_load_ps({}.f32), simde_mm_load_ps({}.f32)), "
+       "simde_mm_castsi128_ps(simde_mm_set1_epi32(int(0x80000000)))));",
+       ctx.v(ctx.insn.operands[0]), ctx.v(ctx.insn.operands[1]), ctx.v(ctx.insn.operands[2]),
+       ctx.v(ctx.insn.operands[3]));
+@@ -147,11 +150,18 @@ bool build_vexptefp(BuilderContext& ctx) {
+   auto vA = ctx.v(ctx.insn.operands[1]);
+   ctx.emit_set_flush_mode(true);
+   ctx.println("\t{{");
++  // Range handling: the exponent below is built from floor(x)+127 with
++  // no clamp, so x < -127 gave huge/negative garbage (2^-200 -> -7.2e16) instead
++  // of 0, x >= 128 gave garbage instead of +inf, and +/-inf gave NaN. Decay terms
++  // like 2^(-k*t) blew up once t got large (objects vanishing mid-fight).
+   ctx.println("\t\tsimde__m128 x = simde_mm_load_ps({}.f32);", vA);
+   ctx.println(
+-      "\t\tsimde__m128 n = simde_mm_round_ps(x, "
++      "\t\tsimde__m128 xc = simde_mm_min_ps(simde_mm_max_ps(x, simde_mm_set1_ps(-127.0f)), "
++      "simde_mm_set1_ps(128.0f));");
++  ctx.println(
++      "\t\tsimde__m128 n = simde_mm_round_ps(xc, "
+       "SIMDE_MM_FROUND_TO_NEG_INF | SIMDE_MM_FROUND_NO_EXC);");
+-  ctx.println("\t\tsimde__m128 f = simde_mm_sub_ps(x, n);");
++  ctx.println("\t\tsimde__m128 f = simde_mm_sub_ps(xc, n);");
+   // 4th-order minimax polynomial for 2^f, f in [0,1), ~12-bit accuracy
+   ctx.println("\t\tsimde__m128 p = simde_mm_set1_ps(1.8775767e-3f);");
+   ctx.println("\t\tp = simde_mm_add_ps(simde_mm_mul_ps(p, f), simde_mm_set1_ps(8.9893397e-3f));");
+@@ -162,10 +172,17 @@ bool build_vexptefp(BuilderContext& ctx) {
+   // Construct 2^n by adding n to the IEEE 754 exponent bias and shifting into place
+   ctx.println("\t\tsimde__m128i exp_bits = simde_mm_slli_epi32(");
+   ctx.println("\t\t\tsimde_mm_add_epi32(simde_mm_cvttps_epi32(n), simde_mm_set1_epi32(127)), 23);");
++  ctx.println("\t\tsimde__m128 r = simde_mm_mul_ps(p, simde_mm_castsi128_ps(exp_bits));");
++  // Below 2^-126 the result is denormal -> 0 (VMX non-Java mode flushes);
++  // x >= 128 -> +inf; NaN in -> NaN out.
+   ctx.println(
+-      "\t\tsimde_mm_store_ps({}.f32, "
+-      "simde_mm_mul_ps(p, simde_mm_castsi128_ps(exp_bits)));",
+-      vD);
++      "\t\tr = simde_mm_blendv_ps(r, simde_mm_setzero_ps(), "
++      "simde_mm_cmplt_ps(x, simde_mm_set1_ps(-126.0f)));");
++  ctx.println(
++      "\t\tr = simde_mm_blendv_ps(r, simde_mm_castsi128_ps(simde_mm_set1_epi32(0x7F800000)), "
++      "simde_mm_cmpge_ps(x, simde_mm_set1_ps(128.0f)));");
++  ctx.println("\t\tr = simde_mm_blendv_ps(r, x, simde_mm_cmpunord_ps(x, x));");
++  ctx.println("\t\tsimde_mm_store_ps({}.f32, r);", vD);
+   ctx.println("\t}}");
+   return true;
+ }
+@@ -1095,17 +1112,17 @@ bool build_vpkuhum(BuilderContext& ctx) {
+ 
+ bool build_vpkuhus(BuilderContext& ctx) {
+   // Vector Pack Unsigned Halfword Unsigned Saturate
+-  // NOTE(tomc): _mm_packus_epi16 treats inputs as signed, so we need custom saturation for
+-  // unsigned. Unsigned halfwords >= 0x8000 would be interpreted as negative and clamped to 0
+-  // instead of 0xFF.
+-  for (size_t i = 0; i < 8; i++) {
+-    ctx.println("\t{}.u8[{}] = {}.u16[{}] > 0xFF ? 0xFF : (uint8_t){}.u16[{}];",
+-                ctx.v(ctx.insn.operands[0]), 15 - i, ctx.v(ctx.insn.operands[1]), 7 - i,
+-                ctx.v(ctx.insn.operands[1]), 7 - i);
+-    ctx.println("\t{}.u8[{}] = {}.u16[{}] > 0xFF ? 0xFF : (uint8_t){}.u16[{}];",
+-                ctx.v(ctx.insn.operands[0]), 7 - i, ctx.v(ctx.insn.operands[2]), 7 - i,
+-                ctx.v(ctx.insn.operands[2]), 7 - i);
+-  }
++  // The old per-element loop wrote vD while still reading vA/vB, so
++  // `vpkuhus vX,vX,vY` (vD aliasing a source) corrupted its own inputs (green
++  // VP6/FMV blocks, rexglue-sdk #364/#426). Clamp each u16 to 0xFF with an
++  // unsigned min (so the signed packus is exact), load both sources before the
++  // store, and keep vB in the low host half / vA in the high half as the other
++  // pack builders do (guest->host element reversal).
++  ctx.println(
++      "\tsimde_mm_store_si128((simde__m128i*){}.u8, simde_mm_packus_epi16("
++      "simde_mm_min_epu16(simde_mm_load_si128((simde__m128i*){}.u16), simde_mm_set1_epi16(0xFF)), "
++      "simde_mm_min_epu16(simde_mm_load_si128((simde__m128i*){}.u16), simde_mm_set1_epi16(0xFF))));",
++      ctx.v(ctx.insn.operands[0]), ctx.v(ctx.insn.operands[2]), ctx.v(ctx.insn.operands[1]));
+   return true;
+ }
+ 
+@@ -1123,17 +1140,12 @@ bool build_vpkuwum(BuilderContext& ctx) {
+ 
+ bool build_vpkuwus(BuilderContext& ctx) {
+   // Vector Pack Unsigned Word Unsigned Saturate
+-
+-  // NOTE(tomc): _mm_packus_epi32 treats inputs as signed, so we need custom saturation for unsigned
+-  // Saturate each u32 to [0, 0xFFFF], then pack to u16
+-  for (size_t i = 0; i < 4; i++) {
+-    ctx.println("\t{}.u16[{}] = {}.u32[{}] > 0xFFFF ? 0xFFFF : (uint16_t){}.u32[{}];",
+-                ctx.v(ctx.insn.operands[0]), 7 - i, ctx.v(ctx.insn.operands[1]), 3 - i,
+-                ctx.v(ctx.insn.operands[1]), 3 - i);
+-    ctx.println("\t{}.u16[{}] = {}.u32[{}] > 0xFFFF ? 0xFFFF : (uint16_t){}.u32[{}];",
+-                ctx.v(ctx.insn.operands[0]), 3 - i, ctx.v(ctx.insn.operands[2]), 3 - i,
+-                ctx.v(ctx.insn.operands[2]), 3 - i);
+-  }
++  // Same in-place aliasing bug as vpkuhus (vD is often vA or vB). Unsigned min to 0xFFFF, then signed packus is exact.
++  ctx.println(
++      "\tsimde_mm_store_si128((simde__m128i*){}.u16, simde_mm_packus_epi32("
++      "simde_mm_min_epu32(simde_mm_load_si128((simde__m128i*){}.u32), simde_mm_set1_epi32(0xFFFF)), "
++      "simde_mm_min_epu32(simde_mm_load_si128((simde__m128i*){}.u32), simde_mm_set1_epi32(0xFFFF))));",
++      ctx.v(ctx.insn.operands[0]), ctx.v(ctx.insn.operands[2]), ctx.v(ctx.insn.operands[1]));
+   return true;
+ }
+ 
+diff --git a/src/core/threading_posix.cpp b/src/core/threading_posix.cpp
+index 9ac8d15..fd454c2 100644
+--- a/src/core/threading_posix.cpp
++++ b/src/core/threading_posix.cpp
+@@ -188,6 +188,22 @@ void MaybeYield() {
+   __sync_synchronize();
+ }
+ 
++void ShortSleepUs(uint32_t us) {
++  struct timespec ts = {0, long(us) * 1000};
++  nanosleep(&ts, nullptr);
++}
++
++void BackoffYield() {
++  thread_local uint32_t streak = 0;
++  if (++streak <= 16) {
++    sched_yield();
++  } else {
++    ShortSleepUs(200);
++    streak = 0;
++  }
++  __sync_synchronize();
++}
++
+ void SyncMemory() {
+   __sync_synchronize();
+ }
+diff --git a/src/core/threading_win.cpp b/src/core/threading_win.cpp
+index 896dfec..e52a1b8 100644
+--- a/src/core/threading_win.cpp
++++ b/src/core/threading_win.cpp
+@@ -89,6 +89,53 @@ void MaybeYield() {
+   MemoryBarrier();
+ }
+ 
++#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
++#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
++#endif
++
++void ShortSleepUs(uint32_t us) {
++  thread_local HANDLE timer = nullptr;
++  thread_local bool tried = false;
++  if (!tried) {
++    tried = true;
++    timer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION,
++                                   TIMER_ALL_ACCESS);
++  }
++  if (!timer) {
++    SwitchToThread();
++    return;
++  }
++  LARGE_INTEGER due;
++  due.QuadPart = -int64_t(us) * 10;  // relative, 100 ns units
++  if (!SetWaitableTimer(timer, &due, 0, nullptr, nullptr, FALSE)) {
++    SwitchToThread();
++    return;
++  }
++  WaitForSingleObject(timer, INFINITE);
++}
++
++void BackoffYield() {
++  thread_local uint32_t streak = 0;
++  thread_local int64_t last_qpc = 0;
++  static const int64_t freq = [] {
++    LARGE_INTEGER f;
++    QueryPerformanceFrequency(&f);
++    return int64_t(f.QuadPart);
++  }();
++  LARGE_INTEGER now;
++  QueryPerformanceCounter(&now);
++  if ((now.QuadPart - last_qpc) * 1000000 / freq > 2000) {
++    streak = 0;
++  }
++  last_qpc = now.QuadPart;
++  if (++streak <= 16) {
++    SwitchToThread();
++  } else {
++    ShortSleepUs(200);
++  }
++  MemoryBarrier();
++}
++
+ void SyncMemory() {
+   MemoryBarrier();
+ }
+diff --git a/src/core/timer_queue.cpp b/src/core/timer_queue.cpp
+index 5cfea05..cabf748 100644
+--- a/src/core/timer_queue.cpp
++++ b/src/core/timer_queue.cpp
+@@ -16,6 +16,7 @@
+ #include <disruptorplus/ring_buffer.hpp>
+ #include <disruptorplus/sequence_barrier.hpp>
+ #include <disruptorplus/spin_wait_strategy.hpp>
++#include <disruptorplus/blocking_wait_strategy.hpp>
+ 
+ #include <rex/assert.h>
+ #include <rex/thread.h>
+@@ -69,7 +70,8 @@ class TimerQueue {
+         // Consume new wait items and add them to sorted wait queue
+         dp::sequence_t available = claim_strategy_.wait_until_published(
+             next_sequence, next_sequence - 1,
+-            wait_queue_.empty() ? clock::time_point::max() : wait_queue_.front()->due_);
++            wait_queue_.empty() ? clock::now() + std::chrono::hours(1)  // not max(): overflows the wait
++                                : wait_queue_.front()->due_);
+ 
+         // Check for timeout
+         if (available != next_sequence - 1) {
+@@ -142,9 +144,11 @@ class TimerQueue {
+   // This ring buffer will be used to introduce timers queued by the public API
+   static constexpr size_t kWaitCount = 512;
+   dp::ring_buffer<std::shared_ptr<WaitItem>> buffer_;
+-  dp::spin_wait_strategy wait_strategy_;
+-  dp::multi_threaded_claim_strategy<dp::spin_wait_strategy> claim_strategy_;
+-  dp::sequence_barrier<dp::spin_wait_strategy> consumed_;
++  // Blocking instead of spinning: the spin strategy burned ~15-20% of a core
++  // even with no timers due.
++  dp::blocking_wait_strategy wait_strategy_;
++  dp::multi_threaded_claim_strategy<dp::blocking_wait_strategy> claim_strategy_;
++  dp::sequence_barrier<dp::blocking_wait_strategy> consumed_;
+ 
+   // This is a _sorted_ (ascending due_) list of active timers managed by a
+   // dedicated thread
+diff --git a/src/graphics/CMakeLists.txt b/src/graphics/CMakeLists.txt
+index 0d8f8af..18fc4c7 100644
+--- a/src/graphics/CMakeLists.txt
++++ b/src/graphics/CMakeLists.txt
+@@ -18,6 +18,7 @@ set(REXGPU_XENOS_SOURCES
+     # GPU system
+     graphics_system.cpp
+     command_processor.cpp
++    fnc_swap_counter.cpp
+     util/draw_extent_estimator.cpp
+     util/draw.cpp
+     packet_disassembler.cpp
+diff --git a/src/graphics/command_processor.cpp b/src/graphics/command_processor.cpp
+index a744375..0cd8599 100644
+--- a/src/graphics/command_processor.cpp
++++ b/src/graphics/command_processor.cpp
+@@ -9,6 +9,7 @@
+  * @modified    Tom Clay, 2026 - Adapted for ReXGlue runtime
+  */
+ 
++#include <atomic>
+ #include <algorithm>
+ #include <cinttypes>
+ #include <cmath>
+@@ -50,8 +51,20 @@ REXCVAR_DEFINE_STRING(readback_resolve, "none", "GPU",
+                       " none: Disable readback (default)\n"
+                       " fast: Read previous frame (delayed, copy every frame)\n"
+                       " some: Read previous frame (delayed, copy on cache miss)\n"
+-                      " full: Immediate sync readback (accurate but stalls)")
+-    .allowed({"none", "fast", "some", "full"})
++                      " full: Immediate sync readback (accurate but stalls)\n"
++                      " smart: Sync readback, except resolves repeated every frame, which are read\n"
++                      "        one frame late (or skipped, see readback_resolve_smart_skip_steady)")
++    .allowed({"none", "fast", "some", "full", "smart"})
++    .lifecycle(rex::cvar::Lifecycle::kHotReload);
++
++REXCVAR_DEFINE_BOOL(readback_resolve_smart_skip_steady, false, "GPU",
++                    "smart readback: do not copy resolves repeated every frame back to guest memory "
++                    "(they are only read by the GPU)")
++    .lifecycle(rex::cvar::Lifecycle::kHotReload);
++
++REXCVAR_DEFINE_INT32(readback_resolve_smart_frames, 8, "GPU",
++                     "smart readback: frames in a row with the same number of resolves to an address "
++                     "before that address counts as repeated every frame")
+     .lifecycle(rex::cvar::Lifecycle::kHotReload);
+ 
+ REXCVAR_DEFINE_BOOL(readback_resolve_half_pixel_offset, false, "GPU",
+@@ -80,6 +93,10 @@ REXCVAR_DEFINE_BOOL(async_shader_compilation, true, "GPU",
+                     "pipelines are being prepared.")
+     .lifecycle(rex::cvar::Lifecycle::kHotReload);
+ 
++namespace rex::graphics::fncperf {
++extern std::atomic<uint64_t> g_swaps;  // fnc_swap_counter.cpp (F1 frame-rate counter)
++}  // namespace rex::graphics::fncperf
++
+ namespace rex::graphics {
+ 
+ using namespace rex::graphics::xenos;
+@@ -96,6 +113,9 @@ ReadbackResolveMode ParseReadbackResolveMode(std::string_view value) {
+   if (value == "full") {
+     return ReadbackResolveMode::kFull;
+   }
++  if (value == "smart") {
++    return ReadbackResolveMode::kSmart;
++  }
+   return ReadbackResolveMode::kDisabled;
+ }
+ 
+@@ -162,6 +182,8 @@ void CommandProcessor::CallInThread(std::function<void()> fn) {
+     fn();
+   } else {
+     pending_fns_.push(std::move(fn));
++    // Wake the worker instead of letting it sit out its idle poll.
++    write_ptr_index_event_->Set();
+   }
+ }
+ 
+@@ -637,7 +659,9 @@ void CommandProcessor::ExecuteIndirectBuffer(uint32_t ptr, uint32_t count) {
+   SCOPE_profile_cpu_f("gpu");
+ 
+   // Execute commands!
+-  memory::RingBuffer reader(memory_->TranslatePhysical(ptr), count * sizeof(uint32_t));
++  // The capacity must exceed the data by one word, otherwise set_write_offset()
++  // wraps to 0 and the ring looks empty (no packets run).
++  memory::RingBuffer reader(memory_->TranslatePhysical(ptr), count * sizeof(uint32_t) + 4);
+   reader.set_write_offset(count * sizeof(uint32_t));
+   do {
+     if (!ExecutePacket(&reader)) {
+@@ -651,7 +675,9 @@ void CommandProcessor::ExecuteIndirectBuffer(uint32_t ptr, uint32_t count) {
+ 
+ void CommandProcessor::ExecutePacket(uint32_t ptr, uint32_t count) {
+   // Execute commands!
+-  memory::RingBuffer reader(memory_->TranslatePhysical(ptr), count * sizeof(uint32_t));
++  // The capacity must exceed the data by one word, otherwise set_write_offset()
++  // wraps to 0 and the ring looks empty (no packets run).
++  memory::RingBuffer reader(memory_->TranslatePhysical(ptr), count * sizeof(uint32_t) + 4);
+   reader.set_write_offset(count * sizeof(uint32_t));
+   do {
+     if (!ExecutePacket(&reader)) {
+@@ -879,11 +905,18 @@ bool CommandProcessor::ExecutePacketType3(memory::RingBuffer* reader, uint32_t p
+       break;
+     }
+ 
+-    default:
+-      REXGPU_INFO("Unimplemented GPU OPCODE: 0x{:02X}\t\tCOUNT: {}\n", opcode, count);
+-      assert_always();
++    default: {
++      // Skip the unknown packet's payload and keep going. Returning false made the
++      // caller discard the rest of the command buffer.
++      static std::atomic<uint32_t> unknown_opcode_count{0};
++      uint32_t n = unknown_opcode_count.fetch_add(1, std::memory_order_relaxed);
++      if (n < 32) {
++        REXGPU_WARN("Unimplemented GPU opcode 0x{:02X} (count {}), skipped", opcode, count);
++      }
+       reader->AdvanceRead(count * sizeof(uint32_t));
++      result = true;
+       break;
++    }
+   }
+ 
+   assert_true(reader->read_offset() ==
+@@ -929,6 +962,7 @@ bool CommandProcessor::ExecutePacketType3_INTERRUPT(memory::RingBuffer* reader,
+ bool CommandProcessor::ExecutePacketType3_XE_SWAP(memory::RingBuffer* reader, uint32_t packet,
+                                                   uint32_t count) {
+   SCOPE_profile_cpu_f("gpu");
++  fncperf::g_swaps.fetch_add(1, std::memory_order_relaxed);
+ 
+ #ifdef REXGLUE_ENABLE_PERF_COUNTERS
+   {
+@@ -1033,12 +1067,9 @@ bool CommandProcessor::ExecutePacketType3_WAIT_REG_MEM(memory::RingBuffer* reade
+       // Wait.
+       if (wait >= 0x100) {
+         PrepareForWait();
+-        if (!REXCVAR_GET(vsync)) {
+-          // User wants it fast and dangerous.
+-          rex::thread::MaybeYield();
+-        } else {
+-          rex::thread::Sleep(std::chrono::milliseconds(wait / 0x100));
+-        }
++        // Was MaybeYield (no vsync) or Sleep(wait/0x100 ms), which Windows rounds
++        // up to ~15.6 ms. Short high-resolution sleeps instead.
++        rex::thread::BackoffYield();
+         rex::thread::SyncMemory();
+         ReturnFromWait();
+ 
+@@ -1047,7 +1078,7 @@ bool CommandProcessor::ExecutePacketType3_WAIT_REG_MEM(memory::RingBuffer* reade
+           return false;
+         }
+       } else {
+-        rex::thread::MaybeYield();
++        rex::thread::BackoffYield();  // was MaybeYield, which spun the GPU thread
+       }
+     }
+   } while (!matched);
+diff --git a/src/graphics/d3d12/command_processor.cpp b/src/graphics/d3d12/command_processor.cpp
+index 19874a5..33c6186 100644
+--- a/src/graphics/d3d12/command_processor.cpp
++++ b/src/graphics/d3d12/command_processor.cpp
+@@ -2903,6 +2903,31 @@ bool D3D12CommandProcessor::IssueCopy_ReadbackResolvePath() {
+ 
+   bool is_scaled = texture_cache_->IsDrawResolutionScaled();
+   uint64_t resolve_key = MakeReadbackResolveKey(written_address, written_length);
++  bool smart_delayed = false;
++  if (GetReadbackResolveMode(REXCVAR_GET(d3d12_readback_resolve)) == ReadbackResolveMode::kSmart) {
++    ReadbackResolveTracker& t = readback_resolve_trackers_[resolve_key];
++    if (t.frame != frame_current_) {
++      bool adjacent = t.frame + 1 == frame_current_;
++      if (adjacent && t.count && t.count == t.count_prev) {
++        ++t.steady_frames;
++      } else {
++        t.steady_frames = 0;
++      }
++      t.count_prev = adjacent ? t.count : 0;
++      t.count = 0;
++      t.frame = frame_current_;
++    }
++    uint32_t occurrence = t.count++;
++    int32_t smart_frames = REXCVAR_GET(readback_resolve_smart_frames);
++    smart_delayed = smart_frames >= 0 && occurrence < 8 && occurrence < t.count_prev &&
++                    t.steady_frames >= uint32_t(smart_frames);
++    if (smart_delayed && REXCVAR_GET(readback_resolve_smart_skip_steady)) {
++      return true;
++    }
++    // Physical addresses are below 0x20000000, so key bits 61-63 are free: one buffer pair
++    // per per-frame occurrence, so the delayed read of pass k is last frame's pass k.
++    resolve_key ^= uint64_t(occurrence < 7 ? occurrence : 7) << 61;
++  }
+   ReadbackBuffer& rb = readback_buffers_[resolve_key];
+   rb.last_used_frame = frame_current_;
+ 
+@@ -3071,7 +3096,8 @@ bool D3D12CommandProcessor::IssueCopy_ReadbackResolvePath() {
+ 
+   ReadbackResolveMode readback_mode = GetReadbackResolveMode(REXCVAR_GET(d3d12_readback_resolve));
+   bool use_delayed_sync =
+-      readback_mode == ReadbackResolveMode::kFast || readback_mode == ReadbackResolveMode::kSome;
++      readback_mode == ReadbackResolveMode::kFast || readback_mode == ReadbackResolveMode::kSome ||
++      (readback_mode == ReadbackResolveMode::kSmart && smart_delayed);
+   uint32_t read_index = write_index;
+   if (use_delayed_sync) {
+     read_index = 1 - write_index;
+@@ -3362,6 +3388,12 @@ bool D3D12CommandProcessor::BeginSubmission(bool is_guest_command) {
+     }
+     EvictOldReadbackBuffers(readback_buffers_);
+     EvictOldReadbackBuffers(memexport_readback_buffers_);
++    if (!readback_resolve_trackers_.empty() && frame_current_ > kReadbackBufferEvictionAgeFrames) {
++      uint64_t tracker_floor = frame_current_ - kReadbackBufferEvictionAgeFrames;
++      for (auto it = readback_resolve_trackers_.begin(); it != readback_resolve_trackers_.end();) {
++        it = it->second.frame < tracker_floor ? readback_resolve_trackers_.erase(it) : std::next(it);
++      }
++    }
+ 
+     primitive_processor_->BeginFrame();
+ 
+diff --git a/src/graphics/fnc_swap_counter.cpp b/src/graphics/fnc_swap_counter.cpp
+new file mode 100644
+index 0000000..23197c8
+--- /dev/null
++++ b/src/graphics/fnc_swap_counter.cpp
+@@ -0,0 +1,16 @@
++// FNC Reborn: number of frames the GPU has presented. The game exe's F1 frame-rate
++// counter reads it through GetProcAddress, so the exe needs no link dependency on
++// the GPU plugin.
++
++#include <atomic>
++#include <cstdint>
++
++namespace rex::graphics::fncperf {
++std::atomic<uint64_t> g_swaps{0};
++}  // namespace rex::graphics::fncperf
++
++#ifdef _WIN32
++extern "C" __declspec(dllexport) uint64_t fnc_gpu_swap_count() {
++  return rex::graphics::fncperf::g_swaps.load(std::memory_order_relaxed);
++}
++#endif
+diff --git a/src/graphics/pipeline/render_target/cache.cpp b/src/graphics/pipeline/render_target/cache.cpp
+index 953c5fd..56f7084 100644
+--- a/src/graphics/pipeline/render_target/cache.cpp
++++ b/src/graphics/pipeline/render_target/cache.cpp
+@@ -28,6 +28,10 @@
+ #include <rex/logging.h>
+ #include <rex/math.h>
+ 
++REXCVAR_DEFINE_BOOL(fnc_rt_no_edram_wrap, true, "GPU",
++                    "Never let a render target's estimated EDRAM range wrap past the last tile onto "
++                    "tile 0 (Fight Night: black knockdown / replay / celebration screens, where a 4x "
++                    "MSAA depth-only pass took ownership of the final composite at base 0)");
+ REXCVAR_DEFINE_BOOL(mrt_edram_used_range_clamp_to_min, true, "GPU",
+                     "Clamp MRT EDRAM used range to minimum");
+ 
+@@ -658,6 +662,18 @@ bool RenderTargetCache::Update(bool is_rasterization_done,
+                                        rt_base);
+   }
+ 
++  if (REXCVAR_GET(fnc_rt_no_edram_wrap)) {
++    // Clamp claimed ranges to the end of the EDRAM. The height estimate is often the
++    // maximum (no usable viewport/scissor bound), and wrapping it onto tile 0 takes ownership
++    // away from render targets that live there although the draw never touches them.
++    for (uint32_t i = 0; i < edram_bases_sorted_count; ++i) {
++      uint32_t rt_base = edram_bases_sorted[i].first;
++      if (rt_base < xenos::kEdramTileCount) {
++        rt_lengths_tiles[i] = std::min(rt_lengths_tiles[i], xenos::kEdramTileCount - rt_base);
++      }
++    }
++  }
++
+   if (interlock_barrier_only) {
+     // Because a full pixel shader interlock barrier may clear the ownership map
+     // (since it flushes all previous writes, and there's no need for another
+diff --git a/src/input/input_system.cpp b/src/input/input_system.cpp
+index 813bb1c..7229dd0 100644
+--- a/src/input/input_system.cpp
++++ b/src/input/input_system.cpp
+@@ -11,6 +11,8 @@
+ 
+ #include <algorithm>
+ #include <cmath>
++#include <mutex>
++#include <chrono>
+ 
+ #include <rex/dbg.h>
+ #include <rex/input/device_assignment.h>
+@@ -32,6 +34,62 @@ namespace rex::input {
+ 
+ namespace {
+ 
++// Hide brief controller drop-outs from the game.
++// SDL sometimes reports a wired pad removed and re-added ~0.35 s later. The
++// reconnected pad is put back on the same guest user, but the game has already
++// seen "user 0 not connected", paused the fight behind a reconnect prompt (fighters
++// and audio vanished) and never recovered. For up to kFncPadGraceMs after a user's
++// last successful poll, report it as connected with nothing pressed instead.
++constexpr int64_t kFncPadGraceMs = 3000;
++struct FncPadGrace {
++  std::mutex mutex;
++  bool seen[4] = {};
++  std::chrono::steady_clock::time_point last_ok[4];
++  X_INPUT_CAPABILITIES caps[4] = {};
++  bool have_caps[4] = {};
++  uint32_t packet[4] = {};
++  bool ghosting[4] = {};
++};
++FncPadGrace& fnc_pad_grace() {
++  static FncPadGrace* g = new FncPadGrace();  // never destroyed (polled until exit)
++  return *g;
++}
++bool FncPadInGrace(uint32_t user, const char* what) {
++  if (user >= 4) return false;
++  auto& g = fnc_pad_grace();
++  std::lock_guard<std::mutex> lock(g.mutex);
++  if (!g.seen[user]) return false;
++  auto age = std::chrono::duration_cast<std::chrono::milliseconds>(
++                 std::chrono::steady_clock::now() - g.last_ok[user])
++                 .count();
++  if (age > kFncPadGraceMs) {
++    if (g.ghosting[user]) {
++      REXLOG_WARN("[FNC-PAD] user {} still gone after {} ms, reporting disconnect", user, age);
++      g.ghosting[user] = false;
++      g.seen[user] = false;
++    }
++    return false;
++  }
++  if (!g.ghosting[user]) {
++    g.ghosting[user] = true;
++    REXLOG_WARN("[FNC-PAD] user {} pad dropped out ({}); hiding it from the game for up to {} ms",
++                user, what, kFncPadGraceMs);
++  }
++  return true;
++}
++void FncPadOk(uint32_t user, uint32_t packet) {
++  if (user >= 4) return;
++  auto& g = fnc_pad_grace();
++  std::lock_guard<std::mutex> lock(g.mutex);
++  if (g.ghosting[user]) {
++    REXLOG_INFO("[FNC-PAD] user {} pad is back", user);
++    g.ghosting[user] = false;
++  }
++  g.seen[user] = true;
++  g.last_ok[user] = std::chrono::steady_clock::now();
++  g.packet[user] = packet;
++}
++
+ // Synthetic devices are parked past every physical ordinal so they cannot push
+ // a real pad off guest user 0. SlotAssignment routes them by their synthetic
+ // flag and never reads this value.
+@@ -195,6 +253,14 @@ X_RESULT InputSystem::GetCapabilities(uint32_t user_index, uint32_t flags,
+   std::vector<DeviceId> ids;
+   assignment_->DevicesForUser(user_index, ids);
+   if (ids.empty()) {
++    if (user_index < 4 && FncPadInGrace(user_index, "caps")) {
++      auto& g = fnc_pad_grace();
++      std::lock_guard<std::mutex> lock(g.mutex);
++      if (g.have_caps[user_index]) {
++        *out_caps = g.caps[user_index];
++        return X_ERROR_SUCCESS;
++      }
++    }
+     return X_ERROR_DEVICE_NOT_CONNECTED;
+   }
+ 
+@@ -206,10 +272,15 @@ X_RESULT InputSystem::GetCapabilities(uint32_t user_index, uint32_t flags,
+   }
+ 
+   auto* driver = DriverForDevice(chosen);
+-  if (!driver) {
+-    return X_ERROR_DEVICE_NOT_CONNECTED;
++  X_RESULT result = driver ? driver->GetDeviceCapabilities(chosen, flags, out_caps)
++                           : X_ERROR_DEVICE_NOT_CONNECTED;
++  if (result == X_ERROR_SUCCESS && user_index < 4) {
++    auto& g = fnc_pad_grace();
++    std::lock_guard<std::mutex> lock(g.mutex);
++    g.caps[user_index] = *out_caps;
++    g.have_caps[user_index] = true;
+   }
+-  return driver->GetDeviceCapabilities(chosen, flags, out_caps);
++  return result;
+ }
+ 
+ X_RESULT InputSystem::GetState(uint32_t user_index, X_INPUT_STATE* out_state) {
+@@ -243,8 +314,18 @@ X_RESULT InputSystem::GetState(uint32_t user_index, X_INPUT_STATE* out_state) {
+   }
+ 
+   if (!any) {
++    if (FncPadInGrace(user_index, "state")) {
++      if (out_state) {
++        auto& g = fnc_pad_grace();
++        std::lock_guard<std::mutex> lock(g.mutex);
++        *out_state = {};
++        out_state->packet_number = g.packet[user_index];
++      }
++      return X_ERROR_SUCCESS;
++    }
+     return X_ERROR_DEVICE_NOT_CONNECTED;
+   }
++  FncPadOk(user_index, merged.packet_number);
+   if (out_state) {
+     *out_state = merged;
+   }
+@@ -289,7 +370,10 @@ X_RESULT InputSystem::SetState(uint32_t user_index, X_INPUT_VIBRATION* vibration
+   if (any_pad) {
+     return pad_rumbled ? X_ERROR_SUCCESS : pad_error;
+   }
+-  return any_synthetic ? X_ERROR_SUCCESS : X_ERROR_DEVICE_NOT_CONNECTED;
++  if (any_synthetic) {
++    return X_ERROR_SUCCESS;
++  }
++  return FncPadInGrace(user_index, "vibration") ? X_ERROR_SUCCESS : X_ERROR_DEVICE_NOT_CONNECTED;
+ }
+ 
+ X_RESULT InputSystem::GetKeystroke(uint32_t user_index, uint32_t flags,
+@@ -318,7 +402,10 @@ X_RESULT InputSystem::GetKeystroke(uint32_t user_index, uint32_t flags,
+       any_connected = true;
+     }
+   }
+-  return any_connected ? X_ERROR_EMPTY : X_ERROR_DEVICE_NOT_CONNECTED;
++  if (any_connected) {
++    return X_ERROR_EMPTY;
++  }
++  return FncPadInGrace(user_index, "keystroke") ? X_ERROR_EMPTY : X_ERROR_DEVICE_NOT_CONNECTED;
+ }
+ 
+ std::unique_ptr<InputSystem> CreateDefaultInputSystem(bool tool_mode) {
+diff --git a/src/kernel/CMakeLists.txt b/src/kernel/CMakeLists.txt
+index 984b97d..977cf34 100644
+--- a/src/kernel/CMakeLists.txt
++++ b/src/kernel/CMakeLists.txt
+@@ -50,7 +50,7 @@ set(REXKERNEL_SOURCES
+     xboxkrnl/xboxkrnl_rtl.cpp
+     xboxkrnl/xboxkrnl_strings.cpp
+     xboxkrnl/xboxkrnl_threading.cpp
+-    # xboxkrnl/xboxkrnl_usbcam.cpp  # TODO: lol eventually.
++    xboxkrnl/xboxkrnl_usbcam.cpp
+     xboxkrnl/xboxkrnl_video.cpp
+     xboxkrnl/xboxkrnl_xconfig.cpp
+     xboxkrnl/xboxkrnl_audio.cpp
+diff --git a/src/kernel/xam/xam_input.cpp b/src/kernel/xam/xam_input.cpp
+index 80c3634..4b4314c 100644
+--- a/src/kernel/xam/xam_input.cpp
++++ b/src/kernel/xam/xam_input.cpp
+@@ -21,6 +21,16 @@
+ 
+ #pragma GCC diagnostic ignored "-Wunused-parameter"
+ 
++#include <atomic>
++// FNC Reborn player camera: Back-button press counter, read by FNCReborn.exe
++// (project/src/player_camera.cpp) through GetProcAddress, so the exe needs no new link dependency.
++static std::atomic<uint32_t> g_fnc_back_presses{0};
++#ifdef _WIN32
++extern "C" __declspec(dllexport) uint32_t fnc_back_press_count() {
++  return g_fnc_back_presses.load(std::memory_order_relaxed);
++}
++#endif
++
+ namespace rex {
+ namespace kernel {
+ namespace xam {
+@@ -112,7 +122,17 @@ u32 XamInputGetState_entry(u32 user_index, u32 flags, ppc_ptr_t<X_INPUT_STATE> i
+   }
+ 
+   auto* is = input_system();
+-  return is->GetState(actual_user_index, input_state);
++  u32 result = is->GetState(actual_user_index, input_state);
++  // FNC Reborn player camera: count Back presses on pad 0 (any controller the input system supports).
++  if (result == X_ERROR_SUCCESS && input_state && actual_user_index == 0) {
++    static uint16_t prev_buttons = 0;
++    uint16_t buttons = input_state->gamepad.buttons;
++    if ((buttons & 0x0020) && !(prev_buttons & 0x0020)) {
++      g_fnc_back_presses.fetch_add(1, std::memory_order_relaxed);
++    }
++    prev_buttons = buttons;
++  }
++  return result;
+ }
+ 
+ // https://msdn.microsoft.com/en-us/library/windows/desktop/microsoft.directx_sdk.reference.xinputsetstate(v=vs.85).aspx
+diff --git a/src/kernel/xboxkrnl/xboxkrnl_crypt.cpp b/src/kernel/xboxkrnl/xboxkrnl_crypt.cpp
+index 765e042..e333c55 100644
+--- a/src/kernel/xboxkrnl/xboxkrnl_crypt.cpp
++++ b/src/kernel/xboxkrnl/xboxkrnl_crypt.cpp
+@@ -13,6 +13,7 @@
+ #pragma GCC diagnostic ignored "-Wunused-parameter"
+ 
+ #include <algorithm>
++#include <cstring>
+ 
+ #include <rex/kernel/xboxkrnl/private.h>
+ #include <rex/logging.h>
+@@ -639,14 +640,23 @@ u32 XeKeysHmacShaUsingKey_entry(mapped_void obscured_key, mapped_void inp_1, u32
+ }
+ 
+ u32 XeKeysConsolePrivateKeySign_entry(mapped_void hash, mapped_void signature) {
+-  REXKRNL_DEBUG("XeKeysConsolePrivateKeySign - stub");
+-  return 0;  // Success
++  // Returns BOOL on real hardware (TRUE = signed). The old stub returned 0 = failure.
++  // Write a deterministic (zeroed) XE_CONSOLE_SIGNATURE (0x228 bytes) so signed data is stable.
++  if (signature) {
++    std::memset(signature.host_address(), 0, 0x228);
++  }
++  return 1;
+ }
+ 
+ u32 XeKeysConsoleSignatureVerification_entry(mapped_void hash, mapped_void signature,
+                                              mapped_void pubkey) {
+-  REXKRNL_DEBUG("XeKeysConsoleSignatureVerification - stub");
+-  return 0;  // Success (signature valid)
++  // Returns BOOL (TRUE = verified) and writes a non-zero compare result through the
++  // third argument (LONG*). The game (sub_82C61810) needs both to be non-zero; the old stub
++  // returned 0, so every signature check failed.
++  if (pubkey) {
++    *reinterpret_cast<rex::be<uint32_t>*>(pubkey.host_address()) = 1;
++  }
++  return 1;
+ }
+ 
+ REX_EXPORT_STUB(__imp__XeKeysGetConsoleCertificate);
+diff --git a/src/kernel/xboxkrnl/xboxkrnl_threading.cpp b/src/kernel/xboxkrnl/xboxkrnl_threading.cpp
+index 57fd161..557018f 100644
+--- a/src/kernel/xboxkrnl/xboxkrnl_threading.cpp
++++ b/src/kernel/xboxkrnl/xboxkrnl_threading.cpp
+@@ -390,7 +390,7 @@ u32 KeDelayExecutionThread_entry(u32 processor_mode, u32 alertable, mapped_u64 i
+ }
+ 
+ u32 NtYieldExecution_entry() {
+-  rex::thread::MaybeYield();
++  rex::thread::BackoffYield();  // game wait loops call this in a tight loop
+   return X_STATUS_SUCCESS;
+ }
+ 
+diff --git a/src/system/kernel_state.cpp b/src/system/kernel_state.cpp
+index 697399c..ea26c56 100644
+--- a/src/system/kernel_state.cpp
++++ b/src/system/kernel_state.cpp
+@@ -27,6 +27,7 @@
+ #include <rex/kernel/xboxkrnl/threading.h>
+ #include <rex/system/kernel_module.h>
+ #include <rex/system/kernel_state.h>
++#include <rex/cvar.h>
+ #include <rex/system/function_dispatcher.h>
+ #include <chrono>
+ #include <thread>
+@@ -43,6 +44,9 @@
+ #include <rex/system/xthread.h>
+ #include <rex/system/xtimer.h>
+ 
++REXCVAR_DEFINE_BOOL(notify_startup_all_listeners, true, "Kernel",
++                    "Send the startup sign-in notifications to every system notification listener");
++
+ namespace rex::system {
+ 
+ constexpr uint32_t kDeferredOverlappedDelayMillis = 100;
+@@ -1091,7 +1095,12 @@ void KernelState::RegisterNotifyListener(XNotifyListener* listener) {
+   // Games seem to expect a few notifications on startup, only for the first
+   // listener.
+   // https://cs.rin.ru/forum/viewtopic.php?f=38&t=60668&hilit=resident+evil+5&start=375
+-  if (!has_notified_startup_ && listener->mask() & 0x00000001) {
++  // The startup notifications used to go to the FIRST system listener only. Fight Night's
++  // save system has its own listener and loads the signed-in profile only after it sees
++  // XN_SYS_SIGNINCHANGED (sub_82B3D8C0: id 10 -> 1 s timer -> state 3); it never got one, so a
++  // new empty profile was created on every boot. Now every system listener gets them.
++  if ((REXCVAR_GET(notify_startup_all_listeners) || !has_notified_startup_) &&
++      (listener->mask() & 0x00000001)) {
+     has_notified_startup_ = true;
+     // XN_SYS_UI (on, off)
+     listener->EnqueueNotification(0x00000009, 1);
+diff --git a/src/system/xmemory.cpp b/src/system/xmemory.cpp
+index 76cc877..f5503af 100644
+--- a/src/system/xmemory.cpp
++++ b/src/system/xmemory.cpp
+@@ -12,6 +12,9 @@
+ #include <algorithm>
+ #include <cstring>
+ #include <utility>
++#include <vector>
++#include <unordered_set>
++#include <mutex>
+ 
+ #if REX_PLATFORM_MAC
+ #include <sys/mman.h>
+@@ -39,6 +42,10 @@ REXCVAR_DEFINE_BOOL(protect_zero, true, "Memory", "Protect the zero page from re
+ REXCVAR_DEFINE_BOOL(protect_on_release, false, "Memory",
+                     "Protect released memory to prevent accesses");
+ 
++REXCVAR_DEFINE_BOOL(fnc_sysheap_pool, true, "Memory",
++                    "Reuse freed single-page system-heap blocks (kernel objects) instead of "
++                    "returning them to the host each time");
++
+ REXCVAR_DEFINE_BOOL(scribble_heap, false, "Memory", "Scribble 0xCD into all allocated heap memory");
+ 
+ namespace rex::memory {
+@@ -690,9 +697,57 @@ void Memory::EnablePhysicalMemoryAccessCallbacks(uint32_t physical_address, uint
+                                          enable_invalidation_notifications, enable_data_providers);
+ }
+ 
++// Reuse pool for small system-heap allocations.
++// Every kernel object (events, semaphores, ...) does two SystemHeapAlloc calls,
++// each a full guest page reserved+committed from the host and released again on
++// close. Fight Night's job system creates an event per job, so the sim thread
++// spent ~1/3 of its time in those system calls. Freed single-page blocks are now
++// kept and handed back out. Set fnc_sysheap_pool = false in FNCReborn.toml to disable.
++namespace {
++struct FncSysHeapPool {
++  std::mutex mutex;
++  std::vector<uint32_t> free_pages;
++  std::unordered_set<uint32_t> pooled;  // addresses that came from the pool path
++  bool enabled = true;
++  bool init = false;
++};
++FncSysHeapPool& fnc_pool() {
++  // Intentionally leaked: memory teardown at process exit still frees objects
++  // after static destructors have run, so the pool must never be destroyed.
++  static FncSysHeapPool* p = new FncSysHeapPool();
++  return *p;
++}
++constexpr size_t kFncPoolMaxFree = 16384;  // 64 MB of guest pages at most
++}  // namespace
++
+ uint32_t Memory::SystemHeapAlloc(uint32_t size, uint32_t alignment, uint32_t system_heap_flags) {
+   // TODO(benvanik): lightweight pool.
+   bool is_physical = !!(system_heap_flags & memory::kSystemHeapPhysical);
++  auto& pool = fnc_pool();
++  bool poolable = !is_physical && size <= 4096 && alignment <= 4096;
++  if (poolable) {
++    uint32_t reused = 0;
++    {
++      std::lock_guard<std::mutex> lock(pool.mutex);
++      if (!pool.init) {
++        pool.init = true;
++        // NOTE: no file checks here. rex::filesystem::GetExecutableFolder() uses
++        // _get_wpgmptr, which fast-fails (0xC0000409) in tools with a narrow
++        // main() such as rexglue.exe codegen.
++        pool.enabled = REXCVAR_GET(fnc_sysheap_pool);
++      }
++      poolable = pool.enabled;
++      if (poolable && !pool.free_pages.empty()) {
++        uint32_t address = pool.free_pages.back();
++        pool.free_pages.pop_back();
++        reused = address;
++      }
++    }
++    if (reused) {
++      Zero(reused, 4096);
++      return reused;
++    }
++  }
+   auto heap = LookupHeapByType(is_physical, 4096);
+   uint32_t address;
+   if (!heap->AllocSystemHeap(
+@@ -701,6 +756,12 @@ uint32_t Memory::SystemHeapAlloc(uint32_t size, uint32_t alignment, uint32_t sys
+     return 0;
+   }
+   Zero(address, size);
++  if (poolable) {
++    {
++      std::lock_guard<std::mutex> lock(pool.mutex);
++      pool.pooled.insert(address);
++    }
++  }
+   return address;
+ }
+ 
+@@ -708,6 +769,21 @@ void Memory::SystemHeapFree(uint32_t address, uint32_t* out_region_size) {
+   if (!address) {
+     return;
+   }
++  {
++    auto& pool = fnc_pool();
++    std::lock_guard<std::mutex> lock(pool.mutex);
++    auto it = pool.pooled.find(address);
++    if (it != pool.pooled.end()) {
++      if (pool.free_pages.size() < kFncPoolMaxFree) {
++        pool.free_pages.push_back(address);
++        if (out_region_size) {
++          *out_region_size = 4096;
++        }
++        return;
++      }
++      pool.pooled.erase(it);
++    }
++  }
+   // TODO(benvanik): lightweight pool.
+   auto heap = LookupHeap(address);
+   heap->Release(address, out_region_size);
+diff --git a/src/system/xthread.cpp b/src/system/xthread.cpp
+index 77bce25..dd52078 100644
+--- a/src/system/xthread.cpp
++++ b/src/system/xthread.cpp
+@@ -1028,7 +1028,7 @@ X_STATUS XThread::Delay(uint32_t processor_mode, uint32_t alertable, uint64_t in
+       if (priority_ <= rex::thread::ThreadPriority::kBelowNormal) {
+         rex::thread::Sleep(std::chrono::microseconds(100));
+       } else {
+-        rex::thread::MaybeYield();
++        rex::thread::BackoffYield();  // was MaybeYield, which spun a core
+       }
+     } else {
+       rex::thread::Sleep(std::chrono::milliseconds(timeout_ms));
+diff --git a/src/ui/rex_app.cpp b/src/ui/rex_app.cpp
+index b94fe9e..0ebad8f 100644
+--- a/src/ui/rex_app.cpp
++++ b/src/ui/rex_app.cpp
+@@ -51,6 +51,13 @@ REXCVAR_DEFINE_STRING(gpu_plugin, "", "GPU",
+                       "GPU emulation")
+     .lifecycle(rex::cvar::Lifecycle::kInitOnly);
+ 
++REXCVAR_DEFINE_STRING(gpu_backend, "any", "GPU",
++                      "GPU backend for the loaded plugin to use ('d3d12', 'vulkan', or 'any')")
++    .lifecycle(rex::cvar::Lifecycle::kInitOnly);
++
++REXCVAR_DEFINE_BOOL(dev_overlays, false, "UI",
++                    "Enable the SDK developer overlays (F3/F4/F7/backtick)");
++
+ namespace rex {
+ 
+ // --- ReXApp ---
+@@ -314,7 +321,7 @@ bool ReXApp::SetupPresentation() {
+   OnPreSetup(config_);
+ 
+   if (!config_.graphics && !config_.gpu_plugin.empty()) {
+-    config_.graphics = rex::system::LoadGpuPlugin(config_.gpu_plugin);
++    config_.graphics = rex::system::LoadGpuPlugin(config_.gpu_plugin, REXCVAR_GET(gpu_backend));
+     if (!config_.graphics) {
+       // Fatal by design: no silent headless fallback.
+       auto msg =
+@@ -394,6 +401,8 @@ void ReXApp::SetupOverlays(rex::ui::Presenter* presenter, rex::ui::ImmediateDraw
+   // gated eager font upload in SetImmediateDrawer is skipped (font uploads
+   // lazily on the first Draw instead).
+   imgui_drawer_->SetPresenterAndImmediateDrawer(presenter, drawer);
++  // SDK overlays (F3 debug, ` console, F4 settings, F7 achievements) only with dev_overlays.
++  if (REXCVAR_GET(dev_overlays)) {
+   rex::ui::RegisterBind("bind_debug_overlay", "F3", "Toggle debug overlay", [this] {
+     if (debug_overlay_) {
+       debug_overlay_.reset();
+@@ -423,6 +432,7 @@ void ReXApp::SetupOverlays(rex::ui::Presenter* presenter, rex::ui::ImmediateDraw
+       achievements_overlay_ = CreateAchievementsOverlay();
+     }
+   });
++  }
+ 
+   OnCreateDialogs(imgui_drawer_.get());
+ }
+diff --git a/thirdparty/disruptorplus/include/disruptorplus/blocking_wait_strategy.hpp b/thirdparty/disruptorplus/include/disruptorplus/blocking_wait_strategy.hpp
+index 32d427d..0f39122 100644
+--- a/thirdparty/disruptorplus/include/disruptorplus/blocking_wait_strategy.hpp
++++ b/thirdparty/disruptorplus/include/disruptorplus/blocking_wait_strategy.hpp
+@@ -169,13 +169,14 @@ namespace disruptorplus
+             sequence_t result;
+             {
+                 std::unique_lock<std::mutex> lock(m_mutex);
++                // std order is (lock, time, predicate).
+                 m_cv.wait_until(
+                     lock,
++                    timeoutTime,
+                     [&]() -> bool {
+                         result = minimum_sequence_after(sequence, count, sequences);
+                         return difference(result, sequence) >= 0;
+-                    },
+-                    timeoutTime);
++                    });
+             }
+             return result;
+         }

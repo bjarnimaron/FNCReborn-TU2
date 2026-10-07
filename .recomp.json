@@ -1,0 +1,18 @@
+{
+  "$schema": "https://recomp.fyi/schema/v1.json",
+  "game": "Fight Night Champion",
+  "system": "Xbox 360",
+  "type": "recomp",
+  "original": { "region": "USA, Europe", "revision": "1.0" },
+  "project": "FNC Reborn",
+  "status": "playable",
+  "targets": ["Windows"],
+  "toolchain": "ReXGlue SDK",
+  "approach": "Static recompilation of the PowerPC code to x86-64, Direct3D 12 renderer",
+  "maintainers": [{ "name": "whompay", "link": "https://github.com/whompay" }],
+  "links": [
+    { "label": "GitHub", "url": "https://github.com/whompay/FNCReborn" }
+  ],
+  "help": ["Testing on older and low-end PCs"],
+  "notes": "Menus, Fight Now, Legacy and Champion modes, Create a Fighter and saves work, with sound, 60 FPS and higher, a Settings > DISPLAY tab and a camera behind your boxer. Built from your own disc; the repository contains no game code or data."
+}

@@ -1,0 +1,22 @@
+/build/
+/dist/
+*.iso
+
+# Game data must never be committed
+*.xex
+*.big
+*.big.orig
+*.viv
+*.vp6
+*.xpr
+*.cba
+*.lnx
+*.vce
+
+# Python and Rust build output
+__pycache__/
+*.pyc
+installer/target/
+
+# Written by the recompiler next to the manifest
+config/generated/

@@ -1,0 +1,48 @@
+# FNC Reborn settings. Setup copies this file to dist\FNCReborn.toml once and
+# never overwrites it, so your changes are kept. The in-game Settings > DISPLAY
+# tab changes some of these for you.
+
+gpu_plugin = "xenos"
+gpu_backend = "d3d12"
+log_level = "info"
+log_file = "FNCReborn.log"
+
+# Frame rate cap: 30 (original), 60, 120 or 144.
+fnc_frame_rate = 60
+vsync = false
+fullscreen = true          # F11 switches between fullscreen and window
+resolution_scale = 1       # 1 = 720p, 2 = 1440p internal resolution
+swap_post_effect = "fxaa"
+
+# Graphics fixes Fight Night needs (leave these alone).
+gpu_allow_invalid_fetch_constants = true
+render_target_path_d3d12 = "rtv"
+use_fuzzy_alpha_epsilon = true
+gamma_render_target_as_unorm16 = true
+native_2x_msaa = false
+d3d12_readback_resolve = false
+readback_resolve = "smart"
+readback_resolve_smart_skip_steady = true
+primitive_processor_cache_min_indices = 1000000
+
+# Texture cache in MB. On a graphics card with 4 GB or less, try 1024 / 2048.
+texture_cache_memory_limit_soft = 4096
+texture_cache_memory_limit_hard = 6144
+
+# Player camera: Back on the controller (or F2) switches between the TV camera
+# and a camera behind your boxer. Restart the game after changing these.
+fnc_fp_enable = true
+fnc_view_boxer = 0          # set 1 if the camera follows your opponent
+fnc_view_first_person = false
+fnc_tp_back = 8.0           # distance behind your head, feet
+fnc_tp_height = 1.8         # height above your head, feet
+fnc_tp_side = 1.5           # over-the-shoulder offset, feet (negative = other shoulder)
+fnc_tp_fov = 0.8            # field of view; the TV camera uses about 0.5
+fnc_tp_look_between = 0.65  # aim point: 0 = your head, 1 = opponent's head
+fnc_tp_smooth = 0.85        # 0 = rigid, 0.95 = very floaty
+# First person (only with fnc_view_first_person = true)
+fnc_fp_fov = 1.0
+fnc_fp_forward = 0.35
+fnc_fp_up = 0.05
+fnc_fp_aim_drop = 0.4
+fnc_fp_smooth = 0.5
