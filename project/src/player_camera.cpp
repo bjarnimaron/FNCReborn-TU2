@@ -1,4 +1,4 @@
-// Player camera mod for Fight Night Champion (default.xex v0.0.0.3 only).
+// Player camera mod for Fight Night Champion (default.xex v0.0.0.3 + title update 2 only).
 //
 // Back on the controller (or F2) toggles the normal TV camera <-> a camera that follows YOUR boxer:
 // third person behind your boxer, looking at the opponent (or first person with
@@ -6,13 +6,13 @@
 // (the game creates the player's first; set fnc_view_boxer = 1 if a fight picks the opponent).
 //
 // How it works:
-//  * Live game camera object (the one sub_82318818 is asked for while sub_8231DAB8 runs):
+//  * Live game camera object (the one sub_823180A0 is asked for while sub_8231D2B0 runs):
 //      +0x04 fov (radians)  +0x08 aspect  +0x0C near  +0x10 far
 //      +0x20 forward xyz    +0x30 up xyz  +0x40 position xyz (feet)  +0x50 focus distance
-//  * sub_8231DAB8 (a CameraDirector method, ~60 times a second) finishes the camera each update.
+//  * sub_8231D2B0 (a CameraDirector method, ~60 times a second) finishes the camera each update.
 //    We put the game's own values back, let it run, save its result, then write our camera,
 //    so the game's camera logic never sees our values.
-//  * Boxer camera-target objects (r3 of sub_823185D0): +0x08 boxer height, then bone records of
+//  * Boxer camera-target objects (r3 of sub_82317E58): +0x08 boxer height, then bone records of
 //    { quat xyzw, pos xyz, pad } every 0x20 bytes from +0x10; record 0 = head (pos at +0x20).
 //  * The Back-button press count comes from rexruntime.dll (fnc_back_press_count, SDK patch).
 #include <atomic>
@@ -134,25 +134,25 @@ bool ToggleRequested() {
 }  // namespace
 
 // Accessor: returns camera+0x20. Remember which camera object the director works on.
-extern "C" void __imp__sub_82318818(PPCContext& __restrict ctx, uint8_t* base);
-extern "C" void sub_82318818(PPCContext& __restrict ctx, uint8_t* base) {
+extern "C" void __imp__sub_823180A0(PPCContext& __restrict ctx, uint8_t* base);
+extern "C" void sub_823180A0(PPCContext& __restrict ctx, uint8_t* base) {
   if (t_in_director) g_cam_inner = ctx.r3.u32;
-  __imp__sub_82318818(ctx, base);
+  __imp__sub_823180A0(ctx, base);
 }
 
 // Boxer camera target (head/neck/chest/... bone records).
-extern "C" void __imp__sub_823185D0(PPCContext& __restrict ctx, uint8_t* base);
-extern "C" void sub_823185D0(PPCContext& __restrict ctx, uint8_t* base) {
+extern "C" void __imp__sub_82317E58(PPCContext& __restrict ctx, uint8_t* base);
+extern "C" void sub_82317E58(PPCContext& __restrict ctx, uint8_t* base) {
   NoteBoxer(base, ctx.r3.u32);
-  __imp__sub_823185D0(ctx, base);
+  __imp__sub_82317E58(ctx, base);
 }
 
 // CameraDirector update: finishes the live camera once per game camera update.
-extern "C" void __imp__sub_8231DAB8(PPCContext& __restrict ctx, uint8_t* base);
-extern "C" void sub_8231DAB8(PPCContext& __restrict ctx, uint8_t* base) {
+extern "C" void __imp__sub_8231D2B0(PPCContext& __restrict ctx, uint8_t* base);
+extern "C" void sub_8231D2B0(PPCContext& __restrict ctx, uint8_t* base) {
   ++g_update;
   if (!REXCVAR_GET(fnc_fp_enable)) {
-    __imp__sub_8231DAB8(ctx, base);
+    __imp__sub_8231D2B0(ctx, base);
     return;
   }
   if (ToggleRequested()) {
@@ -168,7 +168,7 @@ extern "C" void sub_8231DAB8(PPCContext& __restrict ctx, uint8_t* base) {
 
   g_cam_inner = 0;
   t_in_director = true;
-  __imp__sub_8231DAB8(ctx, base);
+  __imp__sub_8231D2B0(ctx, base);
   t_in_director = false;
 
   uint32_t cam = g_cam_inner;

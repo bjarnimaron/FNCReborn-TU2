@@ -51,6 +51,8 @@ add_executable(fnc WIN32
     src/fnc_fps_overlay.cpp
     src/fnc_settings_menu.cpp
     src/player_camera.cpp
+    src/fnc_dlc_unlock.cpp
+    src/fnc_skill_cap.cpp
 )
 if(WIN32)
     target_sources(fnc PRIVATE res/FNCReborn.rc)

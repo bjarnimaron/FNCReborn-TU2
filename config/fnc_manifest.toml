@@ -1,6 +1,4 @@
-# Fight Night Champion (Xbox 360, 2011) - ReXGlue codegen manifest for FNC Reborn.
-# Paths are relative to this file. setup.ps1 extracts the disc image to dist/game.
-
+# Fight Night Champion TU2 (title update 2, default.xex + default.xexp) - ReXGlue codegen manifest.
 [project]
 name = "fnc"
 sdk_version = "0.10.0"
@@ -12,725 +10,751 @@ out_directory_path = "../build/generated"
 includes = []
 
 [entrypoint.functions]
-# Functions the static analysis misses (unresolved branch targets and functions
-# only reached through vtables or function tables). Without them, calls to them
-# fail at run time.
-0x82BD8108 = { name = "sub_82BD8108" }
-0x82362218 = { name = "sub_82362218" }
-0x8230EA68 = { name = "sub_8230EA68" }
-0x822C6C68 = { name = "sub_822C6C68", size = 24 }
-0x822C6C80 = { name = "sub_822C6C80", size = 24 }
-0x822C6C98 = { name = "sub_822C6C98", size = 12 }
-0x822C6D68 = { name = "sub_822C6D68" }
-0x822CD110 = { name = "sub_822CD110" }
-0x822CD118 = { name = "sub_822CD118" }
-0x822CD940 = { name = "sub_822CD940" }
-0x8230F448 = { name = "sub_8230F448" }
-0x8230F458 = { name = "sub_8230F458" }
-0x8230F460 = { name = "sub_8230F460" }
-0x8230F470 = { name = "sub_8230F470" }
-0x8230F478 = { name = "sub_8230F478" }
-0x8230F498 = { name = "sub_8230F498" }
-0x8230F6C0 = { name = "sub_8230F6C0" }
-0x8235F0E0 = { name = "sub_8235F0E0" }
-0x82371FE8 = { name = "sub_82371FE8" }
-0x82382CA8 = { name = "sub_82382CA8" }
-0x82387D00 = { name = "sub_82387D00" }
-0x82387D20 = { name = "sub_82387D20" }
-0x82387DB8 = { name = "sub_82387DB8" }
-0x82389B38 = { name = "sub_82389B38" }
-0x8238B930 = { name = "sub_8238B930" }
-0x8238B938 = { name = "sub_8238B938" }
-0x82393200 = { name = "sub_82393200" }
-0x82393208 = { name = "sub_82393208" }
-0x82393210 = { name = "sub_82393210" }
-0x82393218 = { name = "sub_82393218" }
-0x82393220 = { name = "sub_82393220" }
-0x82393228 = { name = "sub_82393228" }
-0x82393230 = { name = "sub_82393230" }
-0x82393238 = { name = "sub_82393238" }
-0x82393240 = { name = "sub_82393240" }
-0x82393248 = { name = "sub_82393248" }
-0x82393250 = { name = "sub_82393250" }
-0x82393258 = { name = "sub_82393258" }
-0x82393260 = { name = "sub_82393260" }
-0x82393268 = { name = "sub_82393268" }
-0x82393270 = { name = "sub_82393270" }
-0x82393278 = { name = "sub_82393278" }
-0x82393280 = { name = "sub_82393280" }
-0x82393288 = { name = "sub_82393288" }
-0x82393290 = { name = "sub_82393290" }
-0x82393298 = { name = "sub_82393298" }
-0x823932A0 = { name = "sub_823932A0" }
-0x823932A8 = { name = "sub_823932A8" }
-0x823932B0 = { name = "sub_823932B0" }
-0x823932B8 = { name = "sub_823932B8" }
-0x823932C0 = { name = "sub_823932C0" }
-0x823932C8 = { name = "sub_823932C8" }
-0x823932D0 = { name = "sub_823932D0" }
-0x823932D8 = { name = "sub_823932D8" }
-0x823932E0 = { name = "sub_823932E0" }
-0x823932E8 = { name = "sub_823932E8" }
-0x823932F0 = { name = "sub_823932F0" }
-0x823932F8 = { name = "sub_823932F8" }
-0x82393300 = { name = "sub_82393300" }
-0x82393308 = { name = "sub_82393308" }
-0x82393310 = { name = "sub_82393310" }
-0x82393318 = { name = "sub_82393318" }
-0x82393320 = { name = "sub_82393320" }
-0x82393328 = { name = "sub_82393328" }
-0x82393330 = { name = "sub_82393330" }
-0x823955B8 = { name = "sub_823955B8" }
-0x823955C0 = { name = "sub_823955C0" }
-0x823955C8 = { name = "sub_823955C8" }
-0x823955D0 = { name = "sub_823955D0" }
-0x823955D8 = { name = "sub_823955D8" }
-0x823955E0 = { name = "sub_823955E0" }
-0x823955E8 = { name = "sub_823955E8" }
-0x823955F0 = { name = "sub_823955F0" }
-0x823955F8 = { name = "sub_823955F8" }
-0x82395600 = { name = "sub_82395600" }
-0x82395608 = { name = "sub_82395608" }
-0x82395610 = { name = "sub_82395610" }
-0x82395618 = { name = "sub_82395618" }
-0x82395620 = { name = "sub_82395620" }
-0x82395628 = { name = "sub_82395628" }
-0x82395630 = { name = "sub_82395630" }
-0x82395638 = { name = "sub_82395638" }
-0x82395640 = { name = "sub_82395640" }
-0x82395648 = { name = "sub_82395648" }
-0x82395650 = { name = "sub_82395650" }
-0x82395658 = { name = "sub_82395658" }
-0x82395660 = { name = "sub_82395660" }
-0x82395668 = { name = "sub_82395668" }
-0x82395670 = { name = "sub_82395670" }
-0x82395678 = { name = "sub_82395678" }
-0x82395680 = { name = "sub_82395680" }
-0x82395688 = { name = "sub_82395688" }
-0x82395690 = { name = "sub_82395690" }
-0x82395698 = { name = "sub_82395698" }
-0x823956A0 = { name = "sub_823956A0" }
-0x823956A8 = { name = "sub_823956A8" }
-0x823956B0 = { name = "sub_823956B0" }
-0x823956B8 = { name = "sub_823956B8" }
-0x823956C0 = { name = "sub_823956C0" }
-0x823956C8 = { name = "sub_823956C8" }
-0x823956D0 = { name = "sub_823956D0" }
-0x823956D8 = { name = "sub_823956D8" }
-0x8239A120 = { name = "sub_8239A120" }
-0x8239A130 = { name = "sub_8239A130" }
-0x8239A150 = { name = "sub_8239A150" }
-0x8239A168 = { name = "sub_8239A168" }
-0x8239A170 = { name = "sub_8239A170" }
-0x8239A178 = { name = "sub_8239A178" }
-0x8239A180 = { name = "sub_8239A180" }
-0x8239A188 = { name = "sub_8239A188" }
-0x8239A190 = { name = "sub_8239A190" }
-0x8239A198 = { name = "sub_8239A198" }
-0x8239A1A0 = { name = "sub_8239A1A0" }
-0x8239FBF0 = { name = "sub_8239FBF0" }
-0x823D9428 = { name = "sub_823D9428" }
-0x823D9980 = { name = "sub_823D9980" }
-0x823DBFC8 = { name = "sub_823DBFC8" }
-0x823FC7F8 = { name = "sub_823FC7F8" }
-0x823FC800 = { name = "sub_823FC800" }
-0x823FC808 = { name = "sub_823FC808" }
-0x823FC810 = { name = "sub_823FC810" }
-0x823FC818 = { name = "sub_823FC818" }
-0x823FC820 = { name = "sub_823FC820" }
-0x823FC828 = { name = "sub_823FC828" }
-0x823FC830 = { name = "sub_823FC830" }
-0x823FC838 = { name = "sub_823FC838" }
-0x823FC840 = { name = "sub_823FC840" }
-0x823FC848 = { name = "sub_823FC848" }
-0x823FC850 = { name = "sub_823FC850" }
-0x823FC858 = { name = "sub_823FC858" }
-0x823FC860 = { name = "sub_823FC860" }
-0x823FC868 = { name = "sub_823FC868" }
-0x823FC870 = { name = "sub_823FC870" }
-0x823FC878 = { name = "sub_823FC878" }
-0x823FC880 = { name = "sub_823FC880" }
-0x823FC888 = { name = "sub_823FC888" }
-0x823FC890 = { name = "sub_823FC890" }
-0x823FC898 = { name = "sub_823FC898" }
-0x823FC8A0 = { name = "sub_823FC8A0" }
-0x823FC8A8 = { name = "sub_823FC8A8" }
-0x823FC8B0 = { name = "sub_823FC8B0" }
-0x823FC8B8 = { name = "sub_823FC8B8" }
-0x823FC8C0 = { name = "sub_823FC8C0" }
-0x823FC8C8 = { name = "sub_823FC8C8" }
-0x823FC8D0 = { name = "sub_823FC8D0" }
-0x823FC8D8 = { name = "sub_823FC8D8" }
-0x823FC8E0 = { name = "sub_823FC8E0" }
-0x823FC8E8 = { name = "sub_823FC8E8" }
-0x823FC8F0 = { name = "sub_823FC8F0" }
-0x823FC8F8 = { name = "sub_823FC8F8" }
-0x823FC900 = { name = "sub_823FC900" }
-0x823FC908 = { name = "sub_823FC908" }
-0x823FC910 = { name = "sub_823FC910" }
-0x823FC918 = { name = "sub_823FC918" }
-0x823FC920 = { name = "sub_823FC920" }
-0x823FC928 = { name = "sub_823FC928" }
-0x823FC930 = { name = "sub_823FC930" }
-0x823FC938 = { name = "sub_823FC938" }
-0x823FC940 = { name = "sub_823FC940" }
-0x823FC948 = { name = "sub_823FC948" }
-0x823FC950 = { name = "sub_823FC950" }
-0x823FC958 = { name = "sub_823FC958" }
-0x823FC960 = { name = "sub_823FC960" }
-0x823FC968 = { name = "sub_823FC968" }
-0x823FC970 = { name = "sub_823FC970" }
-0x823FC978 = { name = "sub_823FC978" }
-0x823FC980 = { name = "sub_823FC980" }
-0x823FC988 = { name = "sub_823FC988" }
-0x823FC990 = { name = "sub_823FC990" }
-0x823FC998 = { name = "sub_823FC998" }
-0x823FC9A0 = { name = "sub_823FC9A0" }
-0x823FC9A8 = { name = "sub_823FC9A8" }
-0x823FC9B0 = { name = "sub_823FC9B0" }
-0x823FC9B8 = { name = "sub_823FC9B8" }
-0x823FC9C0 = { name = "sub_823FC9C0" }
-0x823FC9C8 = { name = "sub_823FC9C8" }
-0x823FC9D0 = { name = "sub_823FC9D0" }
-0x823FC9D8 = { name = "sub_823FC9D8" }
-0x823FC9E0 = { name = "sub_823FC9E0" }
-0x823FC9E8 = { name = "sub_823FC9E8" }
-0x823FC9F0 = { name = "sub_823FC9F0" }
-0x823FC9F8 = { name = "sub_823FC9F8" }
-0x823FCA00 = { name = "sub_823FCA00" }
-0x823FCA08 = { name = "sub_823FCA08" }
-0x823FCA10 = { name = "sub_823FCA10" }
-0x823FCA18 = { name = "sub_823FCA18" }
-0x823FCA20 = { name = "sub_823FCA20" }
-0x823FCA28 = { name = "sub_823FCA28" }
-0x823FCA30 = { name = "sub_823FCA30" }
-0x823FCA38 = { name = "sub_823FCA38" }
-0x823FCA40 = { name = "sub_823FCA40" }
-0x823FCA48 = { name = "sub_823FCA48" }
-0x823FCA50 = { name = "sub_823FCA50" }
-0x823FCA58 = { name = "sub_823FCA58" }
-0x823FCA60 = { name = "sub_823FCA60" }
-0x823FCA68 = { name = "sub_823FCA68" }
-0x823FCA70 = { name = "sub_823FCA70" }
-0x823FCA78 = { name = "sub_823FCA78" }
-0x823FCA80 = { name = "sub_823FCA80" }
-0x823FCA88 = { name = "sub_823FCA88" }
-0x823FCA90 = { name = "sub_823FCA90" }
-0x823FCA98 = { name = "sub_823FCA98" }
-0x823FCAA0 = { name = "sub_823FCAA0" }
-0x823FCAA8 = { name = "sub_823FCAA8" }
-0x823FCAB0 = { name = "sub_823FCAB0" }
-0x823FCAB8 = { name = "sub_823FCAB8" }
-0x823FCAC0 = { name = "sub_823FCAC0" }
-0x823FCAC8 = { name = "sub_823FCAC8" }
-0x823FCAD0 = { name = "sub_823FCAD0" }
-0x823FCAD8 = { name = "sub_823FCAD8" }
-0x823FCAE0 = { name = "sub_823FCAE0" }
-0x823FCAE8 = { name = "sub_823FCAE8" }
-0x823FCAF0 = { name = "sub_823FCAF0" }
-0x823FCAF8 = { name = "sub_823FCAF8" }
-0x823FCB00 = { name = "sub_823FCB00" }
-0x823FCB08 = { name = "sub_823FCB08" }
-0x823FCB10 = { name = "sub_823FCB10" }
-0x823FCB18 = { name = "sub_823FCB18" }
-0x823FCB20 = { name = "sub_823FCB20" }
-0x823FCB28 = { name = "sub_823FCB28" }
-0x823FCB30 = { name = "sub_823FCB30" }
-0x823FCB38 = { name = "sub_823FCB38" }
-0x823FCB40 = { name = "sub_823FCB40" }
-0x823FCB48 = { name = "sub_823FCB48" }
-0x823FCB50 = { name = "sub_823FCB50" }
-0x823FCB58 = { name = "sub_823FCB58" }
-0x823FCB60 = { name = "sub_823FCB60" }
-0x823FCB68 = { name = "sub_823FCB68" }
-0x823FCB70 = { name = "sub_823FCB70" }
-0x823FCB78 = { name = "sub_823FCB78" }
-0x823FCB80 = { name = "sub_823FCB80" }
-0x823FCB88 = { name = "sub_823FCB88" }
-0x823FCB90 = { name = "sub_823FCB90" }
-0x823FCB98 = { name = "sub_823FCB98" }
-0x823FCBA0 = { name = "sub_823FCBA0" }
-0x823FCBA8 = { name = "sub_823FCBA8" }
-0x823FCBB0 = { name = "sub_823FCBB0" }
-0x823FCBB8 = { name = "sub_823FCBB8" }
-0x823FCBC0 = { name = "sub_823FCBC0" }
-0x823FCBC8 = { name = "sub_823FCBC8" }
-0x823FCBD0 = { name = "sub_823FCBD0" }
-0x823FCBD8 = { name = "sub_823FCBD8" }
-0x823FCBE0 = { name = "sub_823FCBE0" }
-0x823FCBE8 = { name = "sub_823FCBE8" }
-0x823FCBF0 = { name = "sub_823FCBF0" }
-0x823FCBF8 = { name = "sub_823FCBF8" }
-0x823FCC00 = { name = "sub_823FCC00" }
-0x823FCC08 = { name = "sub_823FCC08" }
-0x823FCC10 = { name = "sub_823FCC10" }
-0x823FCC18 = { name = "sub_823FCC18" }
-0x823FCC20 = { name = "sub_823FCC20" }
-0x823FCC28 = { name = "sub_823FCC28" }
-0x823FCC30 = { name = "sub_823FCC30" }
-0x823FCC38 = { name = "sub_823FCC38" }
-0x823FCC40 = { name = "sub_823FCC40" }
-0x823FCC48 = { name = "sub_823FCC48" }
-0x823FCC50 = { name = "sub_823FCC50" }
-0x823FCC58 = { name = "sub_823FCC58" }
-0x823FCC60 = { name = "sub_823FCC60" }
-0x823FCC68 = { name = "sub_823FCC68" }
-0x823FCC70 = { name = "sub_823FCC70" }
-0x823FCC78 = { name = "sub_823FCC78" }
-0x823FCC80 = { name = "sub_823FCC80" }
-0x823FCC88 = { name = "sub_823FCC88" }
-0x823FCC90 = { name = "sub_823FCC90" }
-0x823FCC98 = { name = "sub_823FCC98" }
-0x823FCCA0 = { name = "sub_823FCCA0" }
-0x823FCCA8 = { name = "sub_823FCCA8" }
-0x823FCCB0 = { name = "sub_823FCCB0" }
-0x823FCCB8 = { name = "sub_823FCCB8" }
-0x823FCCC0 = { name = "sub_823FCCC0" }
-0x823FCCC8 = { name = "sub_823FCCC8" }
-0x823FCCD0 = { name = "sub_823FCCD0" }
-0x823FCCD8 = { name = "sub_823FCCD8" }
-0x823FCCE0 = { name = "sub_823FCCE0" }
-0x823FCCE8 = { name = "sub_823FCCE8" }
-0x823FCCF0 = { name = "sub_823FCCF0" }
-0x823FCCF8 = { name = "sub_823FCCF8" }
-0x823FCD00 = { name = "sub_823FCD00" }
-0x823FCD08 = { name = "sub_823FCD08" }
-0x823FCD10 = { name = "sub_823FCD10" }
-0x823FCD18 = { name = "sub_823FCD18" }
-0x823FCD20 = { name = "sub_823FCD20" }
-0x823FCD28 = { name = "sub_823FCD28" }
-0x823FCD30 = { name = "sub_823FCD30" }
-0x823FCD38 = { name = "sub_823FCD38" }
-0x823FCD40 = { name = "sub_823FCD40" }
-0x823FCD48 = { name = "sub_823FCD48" }
-0x823FCD50 = { name = "sub_823FCD50" }
-0x823FCD58 = { name = "sub_823FCD58" }
-0x823FCD60 = { name = "sub_823FCD60" }
-0x823FCD68 = { name = "sub_823FCD68" }
-0x823FCD70 = { name = "sub_823FCD70" }
-0x823FCD78 = { name = "sub_823FCD78" }
-0x823FCD80 = { name = "sub_823FCD80" }
-0x823FCD88 = { name = "sub_823FCD88" }
-0x823FCD90 = { name = "sub_823FCD90" }
-0x823FCD98 = { name = "sub_823FCD98" }
-0x823FCDA0 = { name = "sub_823FCDA0" }
-0x823FCDA8 = { name = "sub_823FCDA8" }
-0x823FCDB0 = { name = "sub_823FCDB0" }
-0x823FCDB8 = { name = "sub_823FCDB8" }
-0x823FCDC0 = { name = "sub_823FCDC0" }
-0x823FCDC8 = { name = "sub_823FCDC8" }
-0x823FCDD0 = { name = "sub_823FCDD0" }
-0x823FCDD8 = { name = "sub_823FCDD8" }
-0x823FCDE0 = { name = "sub_823FCDE0" }
-0x823FCDE8 = { name = "sub_823FCDE8" }
-0x823FCDF0 = { name = "sub_823FCDF0" }
-0x823FCDF8 = { name = "sub_823FCDF8" }
-0x823FCE00 = { name = "sub_823FCE00" }
-0x823FCE08 = { name = "sub_823FCE08" }
-0x823FCE10 = { name = "sub_823FCE10" }
-0x823FCE18 = { name = "sub_823FCE18" }
-0x823FCE20 = { name = "sub_823FCE20" }
-0x823FCE28 = { name = "sub_823FCE28" }
-0x823FCE30 = { name = "sub_823FCE30" }
-0x823FCE38 = { name = "sub_823FCE38" }
-0x823FCE40 = { name = "sub_823FCE40" }
-0x823FCE48 = { name = "sub_823FCE48" }
-0x823FCE50 = { name = "sub_823FCE50" }
-0x823FCE58 = { name = "sub_823FCE58" }
-0x823FCE60 = { name = "sub_823FCE60" }
-0x823FCE68 = { name = "sub_823FCE68" }
-0x823FCE70 = { name = "sub_823FCE70" }
-0x823FCE78 = { name = "sub_823FCE78" }
-0x823FCE80 = { name = "sub_823FCE80" }
-0x823FCE88 = { name = "sub_823FCE88" }
-0x823FCE90 = { name = "sub_823FCE90" }
-0x823FCE98 = { name = "sub_823FCE98" }
-0x823FCEA0 = { name = "sub_823FCEA0" }
-0x823FCEA8 = { name = "sub_823FCEA8" }
-0x823FCEB0 = { name = "sub_823FCEB0" }
-0x823FFF08 = { name = "sub_823FFF08" }
-0x823FFF10 = { name = "sub_823FFF10" }
-0x823FFF18 = { name = "sub_823FFF18" }
-0x823FFF20 = { name = "sub_823FFF20" }
-0x82415F60 = { name = "sub_82415F60" }
-0x82415F68 = { name = "sub_82415F68" }
-0x82415F70 = { name = "sub_82415F70" }
-0x82415F78 = { name = "sub_82415F78" }
-0x82415F80 = { name = "sub_82415F80" }
-0x82415F88 = { name = "sub_82415F88" }
-0x82415F90 = { name = "sub_82415F90" }
-0x82415F98 = { name = "sub_82415F98" }
-0x82415FA0 = { name = "sub_82415FA0" }
-0x82415FA8 = { name = "sub_82415FA8" }
-0x82415FB0 = { name = "sub_82415FB0" }
-0x82415FB8 = { name = "sub_82415FB8" }
-0x82415FC0 = { name = "sub_82415FC0" }
-0x82415FC8 = { name = "sub_82415FC8" }
-0x82415FD0 = { name = "sub_82415FD0" }
-0x82415FD8 = { name = "sub_82415FD8" }
-0x82415FE0 = { name = "sub_82415FE0" }
-0x82415FE8 = { name = "sub_82415FE8" }
-0x82415FF0 = { name = "sub_82415FF0" }
-0x82415FF8 = { name = "sub_82415FF8" }
-0x82416000 = { name = "sub_82416000" }
-0x82416008 = { name = "sub_82416008" }
-0x82416010 = { name = "sub_82416010" }
-0x82416018 = { name = "sub_82416018" }
-0x82416020 = { name = "sub_82416020" }
-0x82416028 = { name = "sub_82416028" }
-0x82416030 = { name = "sub_82416030" }
-0x82416038 = { name = "sub_82416038" }
-0x82416040 = { name = "sub_82416040" }
-0x82416048 = { name = "sub_82416048" }
-0x82416050 = { name = "sub_82416050" }
-0x82416058 = { name = "sub_82416058" }
-0x82416060 = { name = "sub_82416060" }
-0x82416068 = { name = "sub_82416068" }
-0x82416070 = { name = "sub_82416070" }
-0x82416078 = { name = "sub_82416078" }
-0x82416080 = { name = "sub_82416080" }
-0x82416088 = { name = "sub_82416088" }
-0x82416090 = { name = "sub_82416090" }
-0x82416098 = { name = "sub_82416098" }
-0x824160A0 = { name = "sub_824160A0" }
-0x824160A8 = { name = "sub_824160A8" }
-0x824160B0 = { name = "sub_824160B0" }
-0x824160B8 = { name = "sub_824160B8" }
-0x824160C0 = { name = "sub_824160C0" }
-0x824160C8 = { name = "sub_824160C8" }
-0x824160D0 = { name = "sub_824160D0" }
-0x824160D8 = { name = "sub_824160D8" }
-0x824160E0 = { name = "sub_824160E0" }
-0x824160E8 = { name = "sub_824160E8" }
-0x824160F0 = { name = "sub_824160F0" }
-0x824160F8 = { name = "sub_824160F8" }
-0x82416100 = { name = "sub_82416100" }
-0x82416108 = { name = "sub_82416108" }
-0x82416110 = { name = "sub_82416110" }
-0x82416118 = { name = "sub_82416118" }
-0x82416120 = { name = "sub_82416120" }
-0x82416128 = { name = "sub_82416128" }
-0x82416130 = { name = "sub_82416130" }
-0x82416138 = { name = "sub_82416138" }
-0x82416140 = { name = "sub_82416140" }
-0x82416148 = { name = "sub_82416148" }
-0x82416150 = { name = "sub_82416150" }
-0x82416158 = { name = "sub_82416158" }
-0x82416160 = { name = "sub_82416160" }
-0x82416168 = { name = "sub_82416168" }
-0x82416170 = { name = "sub_82416170" }
-0x82416178 = { name = "sub_82416178" }
-0x82416180 = { name = "sub_82416180" }
-0x82416188 = { name = "sub_82416188" }
-0x82416190 = { name = "sub_82416190" }
-0x82416198 = { name = "sub_82416198" }
-0x8242FC88 = { name = "sub_8242FC88" }
-0x8244A780 = { name = "sub_8244A780" }
-0x8244A798 = { name = "sub_8244A798" }
-0x8244A7B0 = { name = "sub_8244A7B0" }
-0x8244A7C8 = { name = "sub_8244A7C8" }
-0x8244A7E0 = { name = "sub_8244A7E0" }
-0x8244A7F8 = { name = "sub_8244A7F8" }
-0x8244A810 = { name = "sub_8244A810" }
-0x8244A828 = { name = "sub_8244A828" }
-0x8244A840 = { name = "sub_8244A840" }
-0x8244A858 = { name = "sub_8244A858" }
-0x8245A210 = { name = "sub_8245A210" }
-0x824C1D38 = { name = "sub_824C1D38" }
-0x824D2318 = { name = "sub_824D2318" }
-0x825B3908 = { name = "sub_825B3908" }
-0x8260A528 = { name = "sub_8260A528" }
-0x8260AD48 = { name = "sub_8260AD48" }
-0x8260AD78 = { name = "sub_8260AD78" }
-0x8260AE18 = { name = "sub_8260AE18" }
-0x8260AE48 = { name = "sub_8260AE48" }
-0x8260AE78 = { name = "sub_8260AE78" }
-0x8260AF28 = { name = "sub_8260AF28" }
-0x8260B7B8 = { name = "sub_8260B7B8" }
-0x82633D60 = { name = "sub_82633D60" }
-0x8264C6D0 = { name = "sub_8264C6D0" }
-0x8264C918 = { name = "sub_8264C918" }
-0x82652440 = { name = "sub_82652440" }
-0x82652568 = { name = "sub_82652568" }
-0x826558E0 = { name = "sub_826558E0" }
-0x8265DB90 = { name = "sub_8265DB90" }
-0x8265DBC0 = { name = "sub_8265DBC0" }
-0x82667170 = { name = "sub_82667170" }
-0x826786D0 = { name = "sub_826786D0" }
-0x826786F0 = { name = "sub_826786F0" }
-0x8267CDE8 = { name = "sub_8267CDE8" }
-0x826834D8 = { name = "sub_826834D8" }
-0x8268AFE8 = { name = "sub_8268AFE8" }
-0x8269E610 = { name = "sub_8269E610" }
-0x8269E640 = { name = "sub_8269E640" }
-0x8269E670 = { name = "sub_8269E670" }
-0x826A0468 = { name = "sub_826A0468" }
-0x826EA688 = { name = "sub_826EA688" }
-0x82723F48 = { name = "sub_82723F48" }
-0x82725598 = { name = "sub_82725598" }
-0x827CA9F8 = { name = "sub_827CA9F8" }
-0x82873620 = { name = "sub_82873620" }
-0x82873630 = { name = "sub_82873630" }
-0x82873C90 = { name = "sub_82873C90" }
-0x82873CA8 = { name = "sub_82873CA8" }
-0x82873CC0 = { name = "sub_82873CC0" }
-0x8287CB20 = { name = "sub_8287CB20" }
-0x8287E070 = { name = "sub_8287E070" }
-0x82885118 = { name = "sub_82885118" }
-0x82885120 = { name = "sub_82885120" }
-0x8288DE10 = { name = "sub_8288DE10" }
-0x8288DE38 = { name = "sub_8288DE38" }
-0x8288F2F8 = { name = "sub_8288F2F8" }
-0x8288F318 = { name = "sub_8288F318" }
-0x8288F4A8 = { name = "sub_8288F4A8" }
-0x8288F5B8 = { name = "sub_8288F5B8" }
-0x8288F5D8 = { name = "sub_8288F5D8" }
-0x8288F6A8 = { name = "sub_8288F6A8" }
-0x8288F6C8 = { name = "sub_8288F6C8" }
-0x8288F6E8 = { name = "sub_8288F6E8" }
-0x8288F708 = { name = "sub_8288F708" }
-0x8288F728 = { name = "sub_8288F728" }
-0x8288F748 = { name = "sub_8288F748" }
-0x8288FA20 = { name = "sub_8288FA20" }
-0x8288FA40 = { name = "sub_8288FA40" }
-0x8288FB48 = { name = "sub_8288FB48" }
-0x8288FB68 = { name = "sub_8288FB68" }
-0x8288FC80 = { name = "sub_8288FC80" }
-0x82890270 = { name = "sub_82890270" }
-0x82890290 = { name = "sub_82890290" }
-0x828902D0 = { name = "sub_828902D0" }
-0x828902F0 = { name = "sub_828902F0" }
-0x82890758 = { name = "sub_82890758" }
-0x828907F8 = { name = "sub_828907F8" }
-0x828919C8 = { name = "sub_828919C8" }
-0x828919D8 = { name = "sub_828919D8" }
-0x828919E8 = { name = "sub_828919E8" }
-0x828919F8 = { name = "sub_828919F8" }
-0x82891A08 = { name = "sub_82891A08" }
-0x82891A18 = { name = "sub_82891A18" }
-0x82891A28 = { name = "sub_82891A28" }
-0x82891A38 = { name = "sub_82891A38" }
-0x82891EC0 = { name = "sub_82891EC0" }
-0x82896F18 = { name = "sub_82896F18" }
-0x82897970 = { name = "sub_82897970" }
-0x82897990 = { name = "sub_82897990" }
-0x828979B0 = { name = "sub_828979B0" }
-0x828979F8 = { name = "sub_828979F8" }
-0x8289A370 = { name = "sub_8289A370" }
-0x8289CB38 = { name = "sub_8289CB38" }
-0x8289E700 = { name = "sub_8289E700" }
-0x828A4220 = { name = "sub_828A4220" }
-0x828A6688 = { name = "sub_828A6688" }
-0x828AFEE0 = { name = "sub_828AFEE0" }
-0x828B5100 = { name = "sub_828B5100" }
-0x828B5150 = { name = "sub_828B5150" }
-0x828B5170 = { name = "sub_828B5170" }
-0x828B5190 = { name = "sub_828B5190" }
-0x828B51A8 = { name = "sub_828B51A8" }
-0x828B51C0 = { name = "sub_828B51C0" }
-0x828B51D8 = { name = "sub_828B51D8" }
-0x828B51F0 = { name = "sub_828B51F0" }
-0x828B5208 = { name = "sub_828B5208" }
-0x828B5220 = { name = "sub_828B5220" }
-0x828B5238 = { name = "sub_828B5238" }
-0x828B5250 = { name = "sub_828B5250" }
-0x828B5268 = { name = "sub_828B5268" }
-0x828B5280 = { name = "sub_828B5280" }
-0x828B5298 = { name = "sub_828B5298" }
-0x828B52B0 = { name = "sub_828B52B0" }
-0x828B52C8 = { name = "sub_828B52C8" }
-0x828B52E0 = { name = "sub_828B52E0" }
-0x828C3C40 = { name = "sub_828C3C40" }
-0x82910328 = { name = "sub_82910328" }
-0x829129D0 = { name = "sub_829129D0" }
-0x82912D80 = { name = "sub_82912D80" }
-0x82913BD8 = { name = "sub_82913BD8" }
-0x82913BF8 = { name = "sub_82913BF8" }
-0x82913F38 = { name = "sub_82913F38" }
-0x829143A0 = { name = "sub_829143A0" }
-0x829144D8 = { name = "sub_829144D8" }
-0x82915DF8 = { name = "sub_82915DF8" }
-0x82915E00 = { name = "sub_82915E00" }
-0x82915E08 = { name = "sub_82915E08" }
-0x82915E10 = { name = "sub_82915E10" }
-0x82915E18 = { name = "sub_82915E18" }
-0x82915E20 = { name = "sub_82915E20" }
-0x82915E28 = { name = "sub_82915E28" }
-0x82916038 = { name = "sub_82916038" }
-0x82916040 = { name = "sub_82916040" }
-0x82917F68 = { name = "sub_82917F68" }
-0x82917F70 = { name = "sub_82917F70" }
-0x82917F78 = { name = "sub_82917F78" }
-0x82917F80 = { name = "sub_82917F80" }
-0x82918A78 = { name = "sub_82918A78" }
-0x82919250 = { name = "sub_82919250" }
-0x82919BE8 = { name = "sub_82919BE8" }
-0x82919C08 = { name = "sub_82919C08" }
-0x82919C28 = { name = "sub_82919C28" }
-0x82919C48 = { name = "sub_82919C48" }
-0x82919C68 = { name = "sub_82919C68" }
-0x82919C88 = { name = "sub_82919C88" }
-0x82919CA8 = { name = "sub_82919CA8" }
-0x82919CC8 = { name = "sub_82919CC8" }
-0x82919F40 = { name = "sub_82919F40" }
-0x82919F58 = { name = "sub_82919F58" }
-0x82919F70 = { name = "sub_82919F70" }
-0x82919F88 = { name = "sub_82919F88" }
-0x82919FA0 = { name = "sub_82919FA0" }
-0x82919FB8 = { name = "sub_82919FB8" }
-0x82919FD0 = { name = "sub_82919FD0" }
-0x82919FE8 = { name = "sub_82919FE8" }
-0x8291A000 = { name = "sub_8291A000" }
-0x8291A018 = { name = "sub_8291A018" }
-0x8291A030 = { name = "sub_8291A030" }
-0x8291A048 = { name = "sub_8291A048" }
-0x8291A060 = { name = "sub_8291A060" }
-0x8291A2B0 = { name = "sub_8291A2B0" }
-0x8291A568 = { name = "sub_8291A568" }
-0x8291A5F0 = { name = "sub_8291A5F0" }
-0x8291A6A0 = { name = "sub_8291A6A0" }
-0x82926BF0 = { name = "sub_82926BF0" }
-0x82927E80 = { name = "sub_82927E80" }
-0x8292B760 = { name = "sub_8292B760" }
-0x8292C5E0 = { name = "sub_8292C5E0" }
-0x8292D710 = { name = "sub_8292D710" }
-0x829566E0 = { name = "sub_829566E0" }
-0x82956720 = { name = "sub_82956720" }
-0x82971368 = { name = "sub_82971368" }
-0x82975658 = { name = "sub_82975658" }
-0x82975678 = { name = "sub_82975678" }
-0x82976B38 = { name = "sub_82976B38" }
-0x82989880 = { name = "sub_82989880" }
-0x829A2680 = { name = "sub_829A2680" }
-0x829A6F28 = { name = "sub_829A6F28" }
-0x829B0A08 = { name = "sub_829B0A08" }
-0x829D8D78 = { name = "sub_829D8D78" }
-0x82A10D38 = { name = "sub_82A10D38" }
-0x82A49670 = { name = "sub_82A49670" }
-0x82AF1770 = { name = "sub_82AF1770" }
-0x82B3EC38 = { name = "sub_82B3EC38" }
-0x82B4FD58 = { name = "sub_82B4FD58" }
-0x82B55C58 = { name = "sub_82B55C58" }
-0x82B6A778 = { name = "sub_82B6A778" }
-0x82B6A9E0 = { name = "sub_82B6A9E0" }
-0x82B87120 = { name = "sub_82B87120" }
-0x82B87E78 = { name = "sub_82B87E78" }
-0x82BCF600 = { name = "sub_82BCF600" }
-0x82C7ED90 = { name = "sub_82C7ED90" }
-0x82C80FE0 = { name = "sub_82C80FE0" }
-0x82C80FE8 = { name = "sub_82C80FE8" }
-0x82C80FF8 = { name = "sub_82C80FF8" }
-0x82C81000 = { name = "sub_82C81000" }
-0x82C87040 = { name = "sub_82C87040" }
-0x82C87048 = { name = "sub_82C87048" }
-0x82C87050 = { name = "sub_82C87050" }
-0x82C87060 = { name = "sub_82C87060" }
-0x82C87068 = { name = "sub_82C87068" }
-0x82C87070 = { name = "sub_82C87070" }
-0x82C87078 = { name = "sub_82C87078" }
-0x82C87080 = { name = "sub_82C87080" }
-0x82C87088 = { name = "sub_82C87088" }
-0x82C87328 = { name = "sub_82C87328" }
-0x82C87338 = { name = "sub_82C87338" }
-0x82C87340 = { name = "sub_82C87340" }
-0x82C87348 = { name = "sub_82C87348" }
-0x82C87920 = { name = "sub_82C87920" }
-0x82C887B0 = { name = "sub_82C887B0" }
-0x82C89520 = { name = "sub_82C89520" }
-0x82C8C298 = { name = "sub_82C8C298" }
-0x82C9B0B0 = { name = "sub_82C9B0B0" }
-0x82CFB920 = { name = "sub_82CFB920" }
-0x82CFB940 = { name = "sub_82CFB940" }
-0x82D02F98 = { name = "sub_82D02F98" }
-0x82D03580 = { name = "sub_82D03580" }
-0x82D09DB8 = { name = "sub_82D09DB8" }
-0x82DAA458 = { name = "sub_82DAA458" }
-0x82DAA470 = { name = "sub_82DAA470" }
-0x82DAA488 = { name = "sub_82DAA488" }
-0x82DAA4A0 = { name = "sub_82DAA4A0" }
-0x82DAA4B8 = { name = "sub_82DAA4B8" }
-0x82DAA4D0 = { name = "sub_82DAA4D0" }
-0x82DAA4E8 = { name = "sub_82DAA4E8" }
-0x82DAA500 = { name = "sub_82DAA500" }
-0x82DAA518 = { name = "sub_82DAA518" }
-0x82DAA530 = { name = "sub_82DAA530" }
-0x82DAA548 = { name = "sub_82DAA548" }
-0x82DAEBB8 = { name = "sub_82DAEBB8" }
-0x82E03500 = { name = "sub_82E03500" }
-0x82E13A00 = { name = "sub_82E13A00" }
-0x82E16698 = { name = "sub_82E16698" }
-0x82E66AC8 = { name = "sub_82E66AC8" }
-0x82E66EE8 = { name = "sub_82E66EE8" }
-0x82E67200 = { name = "sub_82E67200" }
-0x82E68AB0 = { name = "sub_82E68AB0" }
-0x82E68D58 = { name = "sub_82E68D58" }
-0x82E68DF0 = { name = "sub_82E68DF0" }
-0x82E68E88 = { name = "sub_82E68E88" }
-0x82E6F1C8 = { name = "sub_82E6F1C8" }
-0x82E6FBC0 = { name = "sub_82E6FBC0" }
-0x82E6FBE0 = { name = "sub_82E6FBE0" }
-0x82E6FD20 = { name = "sub_82E6FD20" }
-0x82E6FD40 = { name = "sub_82E6FD40" }
-0x82E70970 = { name = "sub_82E70970" }
-0x82E70990 = { name = "sub_82E70990" }
-0x82E852F0 = { name = "sub_82E852F0" }
-0x82E85678 = { name = "sub_82E85678" }
-0x82E85698 = { name = "sub_82E85698" }
-0x82E856A0 = { name = "sub_82E856A0" }
-0x82E856A8 = { name = "sub_82E856A8" }
-0x82E94C08 = { name = "sub_82E94C08" }
-0x82E953C0 = { name = "sub_82E953C0" }
-0x82EAC698 = { name = "sub_82EAC698" }
-0x826131A8 = { name = "sub_826131A8", size = 16 }
-0x826131B8 = { name = "sub_826131B8", size = 16 }
-0x826131C8 = { name = "sub_826131C8", size = 16 }
-0x826131D8 = { name = "sub_826131D8", size = 16 }
-0x826131E8 = { name = "sub_826131E8", size = 16 }
-0x826131F8 = { name = "sub_826131F8", size = 16 }
-0x82613208 = { name = "sub_82613208", size = 16 }
-0x82613218 = { name = "sub_82613218", size = 16 }
-0x82613228 = { name = "sub_82613228", size = 16 }
-0x82613238 = { name = "sub_82613238", size = 16 }
-0x82613248 = { name = "sub_82613248", size = 16 }
-0x82613258 = { name = "sub_82613258", size = 16 }
-0x82613268 = { name = "sub_82613268", size = 16 }
-0x82613278 = { name = "sub_82613278", size = 16 }
-0x82613288 = { name = "sub_82613288", size = 16 }
-0x82613298 = { name = "sub_82613298", size = 16 }
-0x826132A8 = { name = "sub_826132A8", size = 16 }
-0x826132B8 = { name = "sub_826132B8", size = 16 }
-0x826132C8 = { name = "sub_826132C8", size = 16 }
-0x826132D8 = { name = "sub_826132D8", size = 16 }
-0x826795A0 = { name = "sub_826795A0", size = 16 }
-0x826795B0 = { name = "sub_826795B0", size = 16 }
-0x826795C0 = { name = "sub_826795C0", size = 16 }
-0x826795D0 = { name = "sub_826795D0", size = 16 }
-0x826795E0 = { name = "sub_826795E0", size = 16 }
-0x826795F0 = { name = "sub_826795F0", size = 16 }
-0x82679600 = { name = "sub_82679600", size = 16 }
-0x82679610 = { name = "sub_82679610", size = 16 }
-0x82679620 = { name = "sub_82679620", size = 16 }
-0x82679630 = { name = "sub_82679630", size = 16 }
-0x82679640 = { name = "sub_82679640", size = 16 }
-0x82679650 = { name = "sub_82679650", size = 16 }
-0x82679660 = { name = "sub_82679660", size = 16 }
-0x82E09878 = { name = "sub_82E09878", size = 16 }
-0x82E09888 = { name = "sub_82E09888", size = 16 }
-0x82E09898 = { name = "sub_82E09898", size = 16 }
-0x82AFCB40 = { name = "sub_82AFCB40", size = 84 }
-
-# Only reached through code pointers the game stores at run time (found by
-# scanning the executable for lis/addi address pairs that point at a function
-# start). 0x82726098 is called when a fighter is created.
-0x82726098 = { name = "sub_82726098" }
-0x827260C0 = { name = "sub_827260C0" }
-0x8267F508 = { name = "sub_8267F508" }
-0x826A9548 = { name = "sub_826A9548" }
-0x82828DF0 = { name = "sub_82828DF0" }
-0x8283E780 = { name = "sub_8283E780" }
-0x82875A30 = { name = "sub_82875A30" }
-0x82888CF0 = { name = "sub_82888CF0" }
-0x82A69878 = { name = "sub_82A69878" }
-0x82B39E98 = { name = "sub_82B39E98" }
-0x82B39EB0 = { name = "sub_82B39EB0" }
-0x82EA4700 = { name = "sub_82EA4700" }
+# Mapped from the disc manifest (disc address in the comment) plus codegen-reported targets.
+0x822C6FA8 = { name = "sub_822C6FA8", size = 24 }  # disc 0x822C6C68
+0x822C6FC0 = { name = "sub_822C6FC0", size = 24 }  # disc 0x822C6C80
+0x822C6FD8 = { name = "sub_822C6FD8", size = 12 }  # disc 0x822C6C98
+0x822C7050 = { name = "sub_822C7050" }  # disc 0x822C6D68
+0x822CD548 = { name = "sub_822CD548" }  # disc 0x822CD110
+0x822CD550 = { name = "sub_822CD550" }  # disc 0x822CD118
+0x822CDD78 = { name = "sub_822CDD78" }  # disc 0x822CD940
+0x8230E2C8 = { name = "sub_8230E2C8" }  # unresolved branch target
+0x8230E410 = { name = "sub_8230E410" }  # disc 0x8230EA68
+0x8230EE38 = { name = "sub_8230EE38" }  # disc 0x8230F448
+0x8230EE40 = { name = "sub_8230EE40" }  # disc 0x8230F498
+0x8230EE48 = { name = "sub_8230EE48" }  # disc 0x8230F458
+0x8230EE50 = { name = "sub_8230EE50" }  # disc 0x8230F460
+0x8230EE60 = { name = "sub_8230EE60" }  # disc 0x8230F470
+0x8230EE68 = { name = "sub_8230EE68" }  # disc 0x8230F478
+0x8230F068 = { name = "sub_8230F068" }  # disc 0x8230F6C0
+0x8235EB40 = { name = "sub_8235EB40" }  # disc 0x8235F0E0
+0x82361D98 = { name = "sub_82361D98" }  # disc 0x82362218
+0x82389570 = { name = "sub_82389570" }  # disc 0x82387D00
+0x82389598 = { name = "sub_82389598" }  # disc 0x82387D20
+0x82389630 = { name = "sub_82389630" }  # disc 0x82387DB8
+0x8238B338 = { name = "sub_8238B338" }  # disc 0x82389B38
+0x8238D200 = { name = "sub_8238D200" }  # disc 0x8238B930
+0x8238D208 = { name = "sub_8238D208" }  # disc 0x8238B938
+0x82394AF0 = { name = "sub_82394AF0" }  # disc 0x82393200
+0x82394AF8 = { name = "sub_82394AF8" }  # disc 0x82393208
+0x82394B00 = { name = "sub_82394B00" }  # disc 0x82393210
+0x82394B08 = { name = "sub_82394B08" }  # disc 0x82393218
+0x82394B10 = { name = "sub_82394B10" }  # disc 0x82393220
+0x82394B18 = { name = "sub_82394B18" }  # disc 0x82393228
+0x82394B20 = { name = "sub_82394B20" }  # disc 0x82393230
+0x82394B28 = { name = "sub_82394B28" }  # disc 0x82393238
+0x82394B30 = { name = "sub_82394B30" }  # disc 0x82393240
+0x82394B38 = { name = "sub_82394B38" }  # disc 0x82393248
+0x82394B40 = { name = "sub_82394B40" }  # disc 0x82393250
+0x82394B48 = { name = "sub_82394B48" }  # disc 0x82393258
+0x82394B50 = { name = "sub_82394B50" }  # disc 0x82393260
+0x82394B58 = { name = "sub_82394B58" }  # disc 0x82393268
+0x82394B60 = { name = "sub_82394B60" }  # disc 0x82393270
+0x82394B68 = { name = "sub_82394B68" }  # disc 0x82393278
+0x82394B70 = { name = "sub_82394B70" }  # disc 0x82393280
+0x82394B78 = { name = "sub_82394B78" }  # disc 0x82393288
+0x82394B80 = { name = "sub_82394B80" }  # disc 0x82393290
+0x82394B88 = { name = "sub_82394B88" }  # disc 0x82393298
+0x82394B90 = { name = "sub_82394B90" }  # disc 0x823932A0
+0x82394B98 = { name = "sub_82394B98" }  # disc 0x823932A8
+0x82394BA0 = { name = "sub_82394BA0" }  # disc 0x823932B0
+0x82394BA8 = { name = "sub_82394BA8" }  # disc 0x823932B8
+0x82394BB0 = { name = "sub_82394BB0" }  # disc 0x823932C0
+0x82394BB8 = { name = "sub_82394BB8" }  # disc 0x823932C8
+0x82394BC0 = { name = "sub_82394BC0" }  # disc 0x823932D0
+0x82394BC8 = { name = "sub_82394BC8" }  # disc 0x823932D8
+0x82394BD0 = { name = "sub_82394BD0" }  # disc 0x823932E0
+0x82394BD8 = { name = "sub_82394BD8" }  # disc 0x823932E8
+0x82394BE0 = { name = "sub_82394BE0" }  # disc 0x823932F0
+0x82394BE8 = { name = "sub_82394BE8" }  # disc 0x823932F8
+0x82394BF0 = { name = "sub_82394BF0" }  # disc 0x82393300
+0x82394BF8 = { name = "sub_82394BF8" }  # disc 0x82393308
+0x82394C00 = { name = "sub_82394C00" }  # disc 0x82393310
+0x82394C08 = { name = "sub_82394C08" }  # disc 0x82393318
+0x82394C10 = { name = "sub_82394C10" }  # disc 0x82393320
+0x82394C18 = { name = "sub_82394C18" }  # disc 0x82393328
+0x82394C20 = { name = "sub_82394C20" }  # disc 0x82393330
+0x82396E80 = { name = "sub_82396E80" }  # disc 0x823955B8
+0x82396E88 = { name = "sub_82396E88" }  # disc 0x823955C0
+0x82396E90 = { name = "sub_82396E90" }  # disc 0x823955C8
+0x82396E98 = { name = "sub_82396E98" }  # disc 0x823955D0
+0x82396EA0 = { name = "sub_82396EA0" }  # disc 0x823955D8
+0x82396EA8 = { name = "sub_82396EA8" }  # disc 0x823955E0
+0x82396EB0 = { name = "sub_82396EB0" }  # disc 0x823955E8
+0x82396EB8 = { name = "sub_82396EB8" }  # disc 0x823955F0
+0x82396EC0 = { name = "sub_82396EC0" }  # disc 0x823955F8
+0x82396EC8 = { name = "sub_82396EC8" }  # disc 0x82395600
+0x82396ED0 = { name = "sub_82396ED0" }  # disc 0x82395608
+0x82396ED8 = { name = "sub_82396ED8" }  # disc 0x82395610
+0x82396EE0 = { name = "sub_82396EE0" }  # disc 0x82395618
+0x82396EE8 = { name = "sub_82396EE8" }  # disc 0x82395620
+0x82396EF0 = { name = "sub_82396EF0" }  # disc 0x82395628
+0x82396EF8 = { name = "sub_82396EF8" }  # disc 0x82395630
+0x82396F00 = { name = "sub_82396F00" }  # disc 0x82395638
+0x82396F08 = { name = "sub_82396F08" }  # disc 0x82395640
+0x82396F10 = { name = "sub_82396F10" }  # disc 0x82395648
+0x82396F18 = { name = "sub_82396F18" }  # disc 0x82395650
+0x82396F20 = { name = "sub_82396F20" }  # disc 0x82395658
+0x82396F28 = { name = "sub_82396F28" }  # disc 0x82395660
+0x82396F30 = { name = "sub_82396F30" }  # disc 0x82395668
+0x82396F38 = { name = "sub_82396F38" }  # disc 0x82395670
+0x82396F40 = { name = "sub_82396F40" }  # disc 0x82395678
+0x82396F48 = { name = "sub_82396F48" }  # disc 0x82395680
+0x82396F50 = { name = "sub_82396F50" }  # disc 0x82395688
+0x82396F58 = { name = "sub_82396F58" }  # disc 0x82395690
+0x82396F60 = { name = "sub_82396F60" }  # disc 0x82395698
+0x82396F68 = { name = "sub_82396F68" }  # disc 0x823956A0
+0x82396F70 = { name = "sub_82396F70" }  # disc 0x823956A8
+0x82396F78 = { name = "sub_82396F78" }  # disc 0x823956B0
+0x82396F80 = { name = "sub_82396F80" }  # disc 0x823956B8
+0x82396F88 = { name = "sub_82396F88" }  # disc 0x823956C0
+0x82396F90 = { name = "sub_82396F90" }  # disc 0x823956C8
+0x82396F98 = { name = "sub_82396F98" }  # disc 0x823956D0
+0x82396FA0 = { name = "sub_82396FA0" }  # disc 0x823956D8
+0x8239BA08 = { name = "sub_8239BA08" }  # disc 0x8239A120
+0x8239BA18 = { name = "sub_8239BA18" }  # disc 0x8239A130
+0x8239BA38 = { name = "sub_8239BA38" }  # disc 0x8239A150
+0x8239BA50 = { name = "sub_8239BA50" }  # disc 0x8239A168
+0x8239BA58 = { name = "sub_8239BA58" }  # disc 0x8239A170
+0x8239BA60 = { name = "sub_8239BA60" }  # disc 0x8239A178
+0x8239BA68 = { name = "sub_8239BA68" }  # disc 0x8239A180
+0x8239BA70 = { name = "sub_8239BA70" }  # disc 0x8239A188
+0x8239BA78 = { name = "sub_8239BA78" }  # disc 0x8239A190
+0x8239BA80 = { name = "sub_8239BA80" }  # disc 0x8239A198
+0x8239BA88 = { name = "sub_8239BA88" }  # disc 0x8239A1A0
+0x823A15A8 = { name = "sub_823A15A8" }  # disc 0x8239FBF0
+0x823DB438 = { name = "sub_823DB438" }  # disc 0x823D9428
+0x823DB9A0 = { name = "sub_823DB9A0" }  # disc 0x823D9980
+0x823DDFE0 = { name = "sub_823DDFE0" }  # disc 0x823DBFC8
+0x823FE580 = { name = "sub_823FE580" }  # disc 0x823FC7F8
+0x823FE588 = { name = "sub_823FE588" }  # disc 0x823FC800
+0x823FE590 = { name = "sub_823FE590" }  # disc 0x823FC808
+0x823FE598 = { name = "sub_823FE598" }  # disc 0x823FC810
+0x823FE5A0 = { name = "sub_823FE5A0" }  # disc 0x823FC818
+0x823FE5A8 = { name = "sub_823FE5A8" }  # disc 0x823FC820
+0x823FE5B0 = { name = "sub_823FE5B0" }  # disc 0x823FC828
+0x823FE5B8 = { name = "sub_823FE5B8" }  # disc 0x823FC830
+0x823FE5C0 = { name = "sub_823FE5C0" }  # disc 0x823FC838
+0x823FE5C8 = { name = "sub_823FE5C8" }  # disc 0x823FC840
+0x823FE5D0 = { name = "sub_823FE5D0" }  # disc 0x823FC848
+0x823FE5D8 = { name = "sub_823FE5D8" }  # disc 0x823FC850
+0x823FE5E0 = { name = "sub_823FE5E0" }  # disc 0x823FC858
+0x823FE5E8 = { name = "sub_823FE5E8" }  # disc 0x823FC860
+0x823FE5F0 = { name = "sub_823FE5F0" }  # disc 0x823FC868
+0x823FE5F8 = { name = "sub_823FE5F8" }  # disc 0x823FC870
+0x823FE600 = { name = "sub_823FE600" }  # disc 0x823FC878
+0x823FE608 = { name = "sub_823FE608" }  # disc 0x823FC880
+0x823FE610 = { name = "sub_823FE610" }  # disc 0x823FC888
+0x823FE618 = { name = "sub_823FE618" }  # disc 0x823FC890
+0x823FE620 = { name = "sub_823FE620" }  # disc 0x823FC898
+0x823FE628 = { name = "sub_823FE628" }  # disc 0x823FC8A0
+0x823FE630 = { name = "sub_823FE630" }  # disc 0x823FC8A8
+0x823FE638 = { name = "sub_823FE638" }  # disc 0x823FC8B0
+0x823FE640 = { name = "sub_823FE640" }  # disc 0x823FC8B8
+0x823FE648 = { name = "sub_823FE648" }  # disc 0x823FC8C0
+0x823FE650 = { name = "sub_823FE650" }  # disc 0x823FC8C8
+0x823FE658 = { name = "sub_823FE658" }  # disc 0x823FC8D0
+0x823FE660 = { name = "sub_823FE660" }  # disc 0x823FC8D8
+0x823FE668 = { name = "sub_823FE668" }  # disc 0x823FC8E0
+0x823FE670 = { name = "sub_823FE670" }  # disc 0x823FC8E8
+0x823FE678 = { name = "sub_823FE678" }  # disc 0x823FC8F0
+0x823FE680 = { name = "sub_823FE680" }  # disc 0x823FC8F8
+0x823FE688 = { name = "sub_823FE688" }  # disc 0x823FC900
+0x823FE690 = { name = "sub_823FE690" }  # disc 0x823FC908
+0x823FE698 = { name = "sub_823FE698" }  # disc 0x823FC910
+0x823FE6A0 = { name = "sub_823FE6A0" }  # disc 0x823FC918
+0x823FE6A8 = { name = "sub_823FE6A8" }  # disc 0x823FC920
+0x823FE6B0 = { name = "sub_823FE6B0" }  # disc 0x823FC928
+0x823FE6B8 = { name = "sub_823FE6B8" }  # disc 0x823FC930
+0x823FE6C0 = { name = "sub_823FE6C0" }  # disc 0x823FC938
+0x823FE6C8 = { name = "sub_823FE6C8" }  # disc 0x823FC940
+0x823FE6D0 = { name = "sub_823FE6D0" }  # disc 0x823FC948
+0x823FE6D8 = { name = "sub_823FE6D8" }  # disc 0x823FC950
+0x823FE6E0 = { name = "sub_823FE6E0" }  # disc 0x823FC958
+0x823FE6E8 = { name = "sub_823FE6E8" }  # disc 0x823FC960
+0x823FE6F0 = { name = "sub_823FE6F0" }  # disc 0x823FC968
+0x823FE6F8 = { name = "sub_823FE6F8" }  # disc 0x823FC970
+0x823FE700 = { name = "sub_823FE700" }  # disc 0x823FC978
+0x823FE708 = { name = "sub_823FE708" }  # disc 0x823FC980
+0x823FE710 = { name = "sub_823FE710" }  # disc 0x823FC988
+0x823FE718 = { name = "sub_823FE718" }  # disc 0x823FC990
+0x823FE720 = { name = "sub_823FE720" }  # disc 0x823FC998
+0x823FE728 = { name = "sub_823FE728" }  # disc 0x823FC9A0
+0x823FE730 = { name = "sub_823FE730" }  # disc 0x823FC9A8
+0x823FE738 = { name = "sub_823FE738" }  # disc 0x823FC9B0
+0x823FE740 = { name = "sub_823FE740" }  # disc 0x823FC9B8
+0x823FE748 = { name = "sub_823FE748" }  # disc 0x823FC9C0
+0x823FE750 = { name = "sub_823FE750" }  # disc 0x823FC9C8
+0x823FE758 = { name = "sub_823FE758" }  # disc 0x823FC9D0
+0x823FE760 = { name = "sub_823FE760" }  # disc 0x823FC9D8
+0x823FE768 = { name = "sub_823FE768" }  # disc 0x823FC9E0
+0x823FE770 = { name = "sub_823FE770" }  # disc 0x823FC9E8
+0x823FE778 = { name = "sub_823FE778" }  # disc 0x823FC9F0
+0x823FE780 = { name = "sub_823FE780" }  # disc 0x823FC9F8
+0x823FE788 = { name = "sub_823FE788" }  # disc 0x823FCA00
+0x823FE790 = { name = "sub_823FE790" }  # disc 0x823FCA08
+0x823FE798 = { name = "sub_823FE798" }  # disc 0x823FCA10
+0x823FE7A0 = { name = "sub_823FE7A0" }  # disc 0x823FCA18
+0x823FE7A8 = { name = "sub_823FE7A8" }  # disc 0x823FCA20
+0x823FE7B0 = { name = "sub_823FE7B0" }  # disc 0x823FCA28
+0x823FE7B8 = { name = "sub_823FE7B8" }  # disc 0x823FCA30
+0x823FE7C0 = { name = "sub_823FE7C0" }  # disc 0x823FCA38
+0x823FE7C8 = { name = "sub_823FE7C8" }  # disc 0x823FCA40
+0x823FE7D0 = { name = "sub_823FE7D0" }  # disc 0x823FCA48
+0x823FE7D8 = { name = "sub_823FE7D8" }  # disc 0x823FCA50
+0x823FE7E0 = { name = "sub_823FE7E0" }  # disc 0x823FCA58
+0x823FE7E8 = { name = "sub_823FE7E8" }  # disc 0x823FCA60
+0x823FE7F0 = { name = "sub_823FE7F0" }  # disc 0x823FCA68
+0x823FE7F8 = { name = "sub_823FE7F8" }  # disc 0x823FCA70
+0x823FE800 = { name = "sub_823FE800" }  # disc 0x823FCA78
+0x823FE808 = { name = "sub_823FE808" }  # disc 0x823FCA80
+0x823FE810 = { name = "sub_823FE810" }  # disc 0x823FCA88
+0x823FE818 = { name = "sub_823FE818" }  # disc 0x823FCA90
+0x823FE820 = { name = "sub_823FE820" }  # disc 0x823FCA98
+0x823FE828 = { name = "sub_823FE828" }  # disc 0x823FCAA0
+0x823FE830 = { name = "sub_823FE830" }  # disc 0x823FCAA8
+0x823FE838 = { name = "sub_823FE838" }  # disc 0x823FCAB0
+0x823FE840 = { name = "sub_823FE840" }  # disc 0x823FCAB8
+0x823FE848 = { name = "sub_823FE848" }  # disc 0x823FCAC0
+0x823FE850 = { name = "sub_823FE850" }  # disc 0x823FCAC8
+0x823FE858 = { name = "sub_823FE858" }  # disc 0x823FCAD0
+0x823FE860 = { name = "sub_823FE860" }  # disc 0x823FCAD8
+0x823FE868 = { name = "sub_823FE868" }  # disc 0x823FCAE0
+0x823FE870 = { name = "sub_823FE870" }  # disc 0x823FCAE8
+0x823FE878 = { name = "sub_823FE878" }  # disc 0x823FCAF0
+0x823FE880 = { name = "sub_823FE880" }  # disc 0x823FCAF8
+0x823FE888 = { name = "sub_823FE888" }  # disc 0x823FCB00
+0x823FE890 = { name = "sub_823FE890" }  # disc 0x823FCB08
+0x823FE898 = { name = "sub_823FE898" }  # disc 0x823FCB10
+0x823FE8A0 = { name = "sub_823FE8A0" }  # disc 0x823FCB18
+0x823FE8A8 = { name = "sub_823FE8A8" }  # disc 0x823FCB20
+0x823FE8B0 = { name = "sub_823FE8B0" }  # disc 0x823FCB28
+0x823FE8B8 = { name = "sub_823FE8B8" }  # disc 0x823FCB30
+0x823FE8C0 = { name = "sub_823FE8C0" }  # disc 0x823FCB38
+0x823FE8C8 = { name = "sub_823FE8C8" }  # disc 0x823FCB40
+0x823FE8D0 = { name = "sub_823FE8D0" }  # disc 0x823FCB48
+0x823FE8D8 = { name = "sub_823FE8D8" }  # disc 0x823FCB50
+0x823FE8E0 = { name = "sub_823FE8E0" }  # disc 0x823FCB58
+0x823FE8E8 = { name = "sub_823FE8E8" }  # disc 0x823FCB60
+0x823FE8F0 = { name = "sub_823FE8F0" }  # disc 0x823FCB68
+0x823FE8F8 = { name = "sub_823FE8F8" }  # disc 0x823FCB70
+0x823FE900 = { name = "sub_823FE900" }  # disc 0x823FCB78
+0x823FE908 = { name = "sub_823FE908" }  # disc 0x823FCB80
+0x823FE910 = { name = "sub_823FE910" }  # disc 0x823FCB88
+0x823FE918 = { name = "sub_823FE918" }  # disc 0x823FCB90
+0x823FE920 = { name = "sub_823FE920" }  # disc 0x823FCB98
+0x823FE928 = { name = "sub_823FE928" }  # disc 0x823FCBA0
+0x823FE930 = { name = "sub_823FE930" }  # disc 0x823FCBA8
+0x823FE938 = { name = "sub_823FE938" }  # disc 0x823FCBB0
+0x823FE940 = { name = "sub_823FE940" }  # disc 0x823FCBB8
+0x823FE948 = { name = "sub_823FE948" }  # disc 0x823FCBC0
+0x823FE950 = { name = "sub_823FE950" }  # disc 0x823FCBC8
+0x823FE958 = { name = "sub_823FE958" }  # disc 0x823FCBD0
+0x823FE960 = { name = "sub_823FE960" }  # disc 0x823FCBD8
+0x823FE968 = { name = "sub_823FE968" }  # disc 0x823FCBE0
+0x823FE970 = { name = "sub_823FE970" }  # disc 0x823FCBE8
+0x823FE978 = { name = "sub_823FE978" }  # disc 0x823FCBF0
+0x823FE980 = { name = "sub_823FE980" }  # disc 0x823FCBF8
+0x823FE988 = { name = "sub_823FE988" }  # disc 0x823FCC00
+0x823FE990 = { name = "sub_823FE990" }  # disc 0x823FCC08
+0x823FE998 = { name = "sub_823FE998" }  # disc 0x823FCC10
+0x823FE9A0 = { name = "sub_823FE9A0" }  # disc 0x823FCC18
+0x823FE9A8 = { name = "sub_823FE9A8" }  # disc 0x823FCC20
+0x823FE9B0 = { name = "sub_823FE9B0" }  # disc 0x823FCC28
+0x823FE9B8 = { name = "sub_823FE9B8" }  # disc 0x823FCC30
+0x823FE9C0 = { name = "sub_823FE9C0" }  # disc 0x823FCC38
+0x823FE9C8 = { name = "sub_823FE9C8" }  # disc 0x823FCC40
+0x823FE9D0 = { name = "sub_823FE9D0" }  # disc 0x823FCC48
+0x823FE9D8 = { name = "sub_823FE9D8" }  # disc 0x823FCC50
+0x823FE9E0 = { name = "sub_823FE9E0" }  # disc 0x823FCC58
+0x823FE9E8 = { name = "sub_823FE9E8" }  # disc 0x823FCC60
+0x823FE9F0 = { name = "sub_823FE9F0" }  # disc 0x823FCC68
+0x823FE9F8 = { name = "sub_823FE9F8" }  # disc 0x823FCC70
+0x823FEA00 = { name = "sub_823FEA00" }  # disc 0x823FCC78
+0x823FEA08 = { name = "sub_823FEA08" }  # disc 0x823FCC80
+0x823FEA10 = { name = "sub_823FEA10" }  # disc 0x823FCC88
+0x823FEA18 = { name = "sub_823FEA18" }  # disc 0x823FCC90
+0x823FEA20 = { name = "sub_823FEA20" }  # disc 0x823FCC98
+0x823FEA28 = { name = "sub_823FEA28" }  # disc 0x823FCCA0
+0x823FEA30 = { name = "sub_823FEA30" }  # disc 0x823FCCA8
+0x823FEA38 = { name = "sub_823FEA38" }  # disc 0x823FCCB0
+0x823FEA40 = { name = "sub_823FEA40" }  # disc 0x823FCCB8
+0x823FEA48 = { name = "sub_823FEA48" }  # disc 0x823FCCC0
+0x823FEA50 = { name = "sub_823FEA50" }  # disc 0x823FCCC8
+0x823FEA58 = { name = "sub_823FEA58" }  # disc 0x823FCCD0
+0x823FEA60 = { name = "sub_823FEA60" }  # disc 0x823FCCD8
+0x823FEA68 = { name = "sub_823FEA68" }  # disc 0x823FCCE0
+0x823FEA70 = { name = "sub_823FEA70" }  # disc 0x823FCCE8
+0x823FEA78 = { name = "sub_823FEA78" }  # disc 0x823FCCF0
+0x823FEA80 = { name = "sub_823FEA80" }  # disc 0x823FCCF8
+0x823FEA88 = { name = "sub_823FEA88" }  # disc 0x823FCD00
+0x823FEA90 = { name = "sub_823FEA90" }  # disc 0x823FCD08
+0x823FEA98 = { name = "sub_823FEA98" }  # disc 0x823FCD10
+0x823FEAA0 = { name = "sub_823FEAA0" }  # disc 0x823FCD18
+0x823FEAA8 = { name = "sub_823FEAA8" }  # disc 0x823FCD20
+0x823FEAB0 = { name = "sub_823FEAB0" }  # disc 0x823FCD28
+0x823FEAB8 = { name = "sub_823FEAB8" }  # disc 0x823FCD30
+0x823FEAC0 = { name = "sub_823FEAC0" }  # disc 0x823FCD38
+0x823FEAC8 = { name = "sub_823FEAC8" }  # disc 0x823FCD40
+0x823FEAD0 = { name = "sub_823FEAD0" }  # disc 0x823FCD48
+0x823FEAD8 = { name = "sub_823FEAD8" }  # disc 0x823FCD50
+0x823FEAE0 = { name = "sub_823FEAE0" }  # disc 0x823FCD58
+0x823FEAE8 = { name = "sub_823FEAE8" }  # disc 0x823FCD60
+0x823FEAF0 = { name = "sub_823FEAF0" }  # disc 0x823FCD68
+0x823FEAF8 = { name = "sub_823FEAF8" }  # disc 0x823FCD70
+0x823FEB00 = { name = "sub_823FEB00" }  # disc 0x823FCD78
+0x823FEB08 = { name = "sub_823FEB08" }  # disc 0x823FCD80
+0x823FEB10 = { name = "sub_823FEB10" }  # disc 0x823FCD88
+0x823FEB18 = { name = "sub_823FEB18" }  # disc 0x823FCD90
+0x823FEB20 = { name = "sub_823FEB20" }  # disc 0x823FCD98
+0x823FEB28 = { name = "sub_823FEB28" }  # disc 0x823FCDA0
+0x823FEB30 = { name = "sub_823FEB30" }  # disc 0x823FCDA8
+0x823FEB38 = { name = "sub_823FEB38" }  # disc 0x823FCDB0
+0x823FEB40 = { name = "sub_823FEB40" }  # disc 0x823FCDB8
+0x823FEB48 = { name = "sub_823FEB48" }  # disc 0x823FCDC0
+0x823FEB50 = { name = "sub_823FEB50" }  # disc 0x823FCDC8
+0x823FEB58 = { name = "sub_823FEB58" }  # disc 0x823FCDD0
+0x823FEB60 = { name = "sub_823FEB60" }  # disc 0x823FCDD8
+0x823FEB68 = { name = "sub_823FEB68" }  # disc 0x823FCDE0
+0x823FEB70 = { name = "sub_823FEB70" }  # disc 0x823FCDE8
+0x823FEB78 = { name = "sub_823FEB78" }  # disc 0x823FCDF0
+0x823FEB80 = { name = "sub_823FEB80" }  # disc 0x823FCDF8
+0x823FEB88 = { name = "sub_823FEB88" }  # disc 0x823FCE00
+0x823FEB90 = { name = "sub_823FEB90" }  # disc 0x823FCE08
+0x823FEB98 = { name = "sub_823FEB98" }  # disc 0x823FCE10
+0x823FEBA0 = { name = "sub_823FEBA0" }  # disc 0x823FCE18
+0x823FEBA8 = { name = "sub_823FEBA8" }  # disc 0x823FCE20
+0x823FEBB0 = { name = "sub_823FEBB0" }  # disc 0x823FCE28
+0x823FEBB8 = { name = "sub_823FEBB8" }  # disc 0x823FCE30
+0x823FEBC0 = { name = "sub_823FEBC0" }  # disc 0x823FCE38
+0x823FEBC8 = { name = "sub_823FEBC8" }  # disc 0x823FCE40
+0x823FEBD0 = { name = "sub_823FEBD0" }  # disc 0x823FCE48
+0x823FEBD8 = { name = "sub_823FEBD8" }  # disc 0x823FCE50
+0x823FEBE0 = { name = "sub_823FEBE0" }  # disc 0x823FCE58
+0x823FEBE8 = { name = "sub_823FEBE8" }  # disc 0x823FCE60
+0x823FEBF0 = { name = "sub_823FEBF0" }  # disc 0x823FCE68
+0x823FEBF8 = { name = "sub_823FEBF8" }  # disc 0x823FCE70
+0x823FEC00 = { name = "sub_823FEC00" }  # disc 0x823FCE78
+0x823FEC08 = { name = "sub_823FEC08" }  # disc 0x823FCE80
+0x823FEC10 = { name = "sub_823FEC10" }  # disc 0x823FCE88
+0x823FEC18 = { name = "sub_823FEC18" }  # disc 0x823FCE90
+0x823FEC20 = { name = "sub_823FEC20" }  # disc 0x823FCE98
+0x823FEC28 = { name = "sub_823FEC28" }  # disc 0x823FCEA0
+0x823FEC30 = { name = "sub_823FEC30" }  # disc 0x823FCEA8
+0x823FEC38 = { name = "sub_823FEC38" }  # disc 0x823FCEB0
+0x82401C20 = { name = "sub_82401C20" }  # disc 0x823FFF08
+0x82401C28 = { name = "sub_82401C28" }  # disc 0x823FFF10
+0x82401C30 = { name = "sub_82401C30" }  # disc 0x823FFF18
+0x82401C38 = { name = "sub_82401C38" }  # disc 0x823FFF20
+0x82417BA0 = { name = "sub_82417BA0" }  # disc 0x82415F60
+0x82417BA8 = { name = "sub_82417BA8" }  # disc 0x82415F68
+0x82417BB0 = { name = "sub_82417BB0" }  # disc 0x82415F70
+0x82417BB8 = { name = "sub_82417BB8" }  # disc 0x82415F78
+0x82417BC0 = { name = "sub_82417BC0" }  # disc 0x82415F80
+0x82417BC8 = { name = "sub_82417BC8" }  # disc 0x82415F88
+0x82417BD0 = { name = "sub_82417BD0" }  # disc 0x82415F90
+0x82417BD8 = { name = "sub_82417BD8" }  # disc 0x82415F98
+0x82417BE0 = { name = "sub_82417BE0" }  # disc 0x82415FA0
+0x82417BE8 = { name = "sub_82417BE8" }  # disc 0x82415FA8
+0x82417BF0 = { name = "sub_82417BF0" }  # disc 0x82415FB0
+0x82417BF8 = { name = "sub_82417BF8" }  # disc 0x82415FB8
+0x82417C00 = { name = "sub_82417C00" }  # disc 0x82415FC0
+0x82417C08 = { name = "sub_82417C08" }  # disc 0x82415FC8
+0x82417C10 = { name = "sub_82417C10" }  # disc 0x82415FD0
+0x82417C18 = { name = "sub_82417C18" }  # disc 0x82415FD8
+0x82417C20 = { name = "sub_82417C20" }  # disc 0x82415FE0
+0x82417C28 = { name = "sub_82417C28" }  # disc 0x82415FE8
+0x82417C30 = { name = "sub_82417C30" }  # disc 0x82415FF0
+0x82417C38 = { name = "sub_82417C38" }  # disc 0x82415FF8
+0x82417C40 = { name = "sub_82417C40" }  # disc 0x82416000
+0x82417C48 = { name = "sub_82417C48" }  # disc 0x82416008
+0x82417C50 = { name = "sub_82417C50" }  # disc 0x82416010
+0x82417C58 = { name = "sub_82417C58" }  # disc 0x82416018
+0x82417C60 = { name = "sub_82417C60" }  # disc 0x82416020
+0x82417C68 = { name = "sub_82417C68" }  # disc 0x82416028
+0x82417C70 = { name = "sub_82417C70" }  # disc 0x82416030
+0x82417C78 = { name = "sub_82417C78" }  # disc 0x82416038
+0x82417C80 = { name = "sub_82417C80" }  # disc 0x82416040
+0x82417C88 = { name = "sub_82417C88" }  # disc 0x82416048
+0x82417C90 = { name = "sub_82417C90" }  # disc 0x82416050
+0x82417C98 = { name = "sub_82417C98" }  # disc 0x82416058
+0x82417CA0 = { name = "sub_82417CA0" }  # disc 0x82416060
+0x82417CA8 = { name = "sub_82417CA8" }  # disc 0x82416068
+0x82417CB0 = { name = "sub_82417CB0" }  # disc 0x82416070
+0x82417CB8 = { name = "sub_82417CB8" }  # disc 0x82416078
+0x82417CC0 = { name = "sub_82417CC0" }  # disc 0x82416080
+0x82417CC8 = { name = "sub_82417CC8" }  # disc 0x82416088
+0x82417CD0 = { name = "sub_82417CD0" }  # disc 0x82416090
+0x82417CD8 = { name = "sub_82417CD8" }  # disc 0x82416098
+0x82417CE0 = { name = "sub_82417CE0" }  # disc 0x824160A0
+0x82417CE8 = { name = "sub_82417CE8" }  # disc 0x824160A8
+0x82417CF0 = { name = "sub_82417CF0" }  # disc 0x824160B0
+0x82417CF8 = { name = "sub_82417CF8" }  # disc 0x824160B8
+0x82417D00 = { name = "sub_82417D00" }  # disc 0x824160C0
+0x82417D08 = { name = "sub_82417D08" }  # disc 0x824160C8
+0x82417D10 = { name = "sub_82417D10" }  # disc 0x824160D0
+0x82417D18 = { name = "sub_82417D18" }  # disc 0x824160D8
+0x82417D20 = { name = "sub_82417D20" }  # disc 0x824160E0
+0x82417D28 = { name = "sub_82417D28" }  # disc 0x824160E8
+0x82417D30 = { name = "sub_82417D30" }  # disc 0x824160F0
+0x82417D38 = { name = "sub_82417D38" }  # disc 0x824160F8
+0x82417D40 = { name = "sub_82417D40" }  # disc 0x82416100
+0x82417D48 = { name = "sub_82417D48" }  # disc 0x82416108
+0x82417D50 = { name = "sub_82417D50" }  # disc 0x82416110
+0x82417D58 = { name = "sub_82417D58" }  # disc 0x82416118
+0x82417D60 = { name = "sub_82417D60" }  # disc 0x82416120
+0x82417D68 = { name = "sub_82417D68" }  # disc 0x82416128
+0x82417D70 = { name = "sub_82417D70" }  # disc 0x82416130
+0x82417D78 = { name = "sub_82417D78" }  # disc 0x82416138
+0x82417D80 = { name = "sub_82417D80" }  # disc 0x82416140
+0x82417D88 = { name = "sub_82417D88" }  # disc 0x82416148
+0x82417D90 = { name = "sub_82417D90" }  # disc 0x82416150
+0x82417D98 = { name = "sub_82417D98" }  # disc 0x82416158
+0x82417DA0 = { name = "sub_82417DA0" }  # disc 0x82416160
+0x82417DA8 = { name = "sub_82417DA8" }  # disc 0x82416168
+0x82417DB0 = { name = "sub_82417DB0" }  # disc 0x82416170
+0x82417DB8 = { name = "sub_82417DB8" }  # disc 0x82416178
+0x82417DC0 = { name = "sub_82417DC0" }  # disc 0x82416180
+0x82417DC8 = { name = "sub_82417DC8" }  # disc 0x82416188
+0x82417DD0 = { name = "sub_82417DD0" }  # disc 0x82416190
+0x82417DD8 = { name = "sub_82417DD8" }  # disc 0x82416198
+0x82431A50 = { name = "sub_82431A50" }  # disc 0x8242FC88
+0x8244C4D8 = { name = "sub_8244C4D8" }  # disc 0x8244A780
+0x8244C4F0 = { name = "sub_8244C4F0" }  # disc 0x8244A798
+0x8244C508 = { name = "sub_8244C508" }  # disc 0x8244A7B0
+0x8244C520 = { name = "sub_8244C520" }  # disc 0x8244A7C8
+0x8244C538 = { name = "sub_8244C538" }  # disc 0x8244A7E0
+0x8244C550 = { name = "sub_8244C550" }  # disc 0x8244A7F8
+0x8244C568 = { name = "sub_8244C568" }  # disc 0x8244A810
+0x8244C580 = { name = "sub_8244C580" }  # disc 0x8244A828
+0x8244C598 = { name = "sub_8244C598" }  # disc 0x8244A840
+0x8244C5B0 = { name = "sub_8244C5B0" }  # disc 0x8244A858
+0x8245C9E0 = { name = "sub_8245C9E0" }  # disc 0x8245A210
+0x824C5D60 = { name = "sub_824C5D60" }  # disc 0x824C1D38
+0x824D6308 = { name = "sub_824D6308" }  # disc 0x824D2318
+0x825B6F80 = { name = "sub_825B6F80" }  # disc 0x825B3908
+0x8260DB08 = { name = "sub_8260DB08" }  # disc 0x8260A528
+0x8260E308 = { name = "sub_8260E308" }  # disc 0x8260AD48
+0x8260E338 = { name = "sub_8260E338" }  # disc 0x8260AD78
+0x8260E3D8 = { name = "sub_8260E3D8" }  # disc 0x8260AE18
+0x8260E408 = { name = "sub_8260E408" }  # disc 0x8260AE48
+0x8260E438 = { name = "sub_8260E438" }  # disc 0x8260AE78
+0x8260E4E8 = { name = "sub_8260E4E8" }  # disc 0x8260AF28
+0x8260ED10 = { name = "sub_8260ED10" }  # disc 0x8260B7B8
+0x82616908 = { name = "sub_82616908", size = 16 }  # disc 0x826131A8
+0x82616918 = { name = "sub_82616918", size = 16 }  # disc 0x826131B8
+0x82616928 = { name = "sub_82616928", size = 16 }  # disc 0x826131C8
+0x82616938 = { name = "sub_82616938", size = 16 }  # disc 0x826131D8
+0x82616948 = { name = "sub_82616948", size = 16 }  # disc 0x826131E8
+0x82616958 = { name = "sub_82616958", size = 16 }  # disc 0x826131F8
+0x82616968 = { name = "sub_82616968", size = 16 }  # disc 0x82613208
+0x82616978 = { name = "sub_82616978", size = 16 }  # disc 0x82613218
+0x82616988 = { name = "sub_82616988", size = 16 }  # disc 0x82613228
+0x82616998 = { name = "sub_82616998", size = 16 }  # disc 0x82613238
+0x826169A8 = { name = "sub_826169A8", size = 16 }  # disc 0x82613248
+0x826169B8 = { name = "sub_826169B8", size = 16 }  # disc 0x82613258
+0x826169C8 = { name = "sub_826169C8", size = 16 }  # disc 0x82613268
+0x826169D8 = { name = "sub_826169D8", size = 16 }  # disc 0x82613278
+0x826169E8 = { name = "sub_826169E8", size = 16 }  # disc 0x82613288
+0x826169F8 = { name = "sub_826169F8", size = 16 }  # disc 0x82613298
+0x82616A08 = { name = "sub_82616A08", size = 16 }  # disc 0x826132A8
+0x82616A18 = { name = "sub_82616A18", size = 16 }  # disc 0x826132B8
+0x82616A28 = { name = "sub_82616A28", size = 16 }  # disc 0x826132C8
+0x82616A38 = { name = "sub_82616A38", size = 16 }  # disc 0x826132D8
+0x82636B98 = { name = "sub_82636B98" }  # disc 0x82633D60
+0x8264F240 = { name = "sub_8264F240" }  # disc 0x8264C6D0
+0x8264F488 = { name = "sub_8264F488" }  # disc 0x8264C918
+0x82655018 = { name = "sub_82655018" }  # disc 0x82652440
+0x82655140 = { name = "sub_82655140" }  # disc 0x82652568
+0x82658968 = { name = "sub_82658968" }  # disc 0x826558E0
+0x82660E20 = { name = "sub_82660E20" }  # disc 0x8265DB90
+0x82660E50 = { name = "sub_82660E50" }  # disc 0x8265DBC0
+0x8266A2E8 = { name = "sub_8266A2E8" }  # disc 0x82667170
+0x8267B820 = { name = "sub_8267B820" }  # disc 0x826786F0
+0x8267C688 = { name = "sub_8267C688", size = 16 }  # disc 0x826795A0
+0x8267C698 = { name = "sub_8267C698", size = 16 }  # disc 0x826795B0
+0x8267C6A8 = { name = "sub_8267C6A8", size = 16 }  # disc 0x826795C0
+0x8267C6B8 = { name = "sub_8267C6B8", size = 16 }  # disc 0x826795D0
+0x8267C6C8 = { name = "sub_8267C6C8", size = 16 }  # disc 0x826795E0
+0x8267C6D8 = { name = "sub_8267C6D8", size = 16 }  # disc 0x826795F0
+0x8267C6E8 = { name = "sub_8267C6E8", size = 16 }  # disc 0x82679600
+0x8267C6F8 = { name = "sub_8267C6F8", size = 16 }  # disc 0x82679610
+0x8267C708 = { name = "sub_8267C708", size = 16 }  # disc 0x82679620
+0x8267C718 = { name = "sub_8267C718", size = 16 }  # disc 0x82679630
+0x8267C728 = { name = "sub_8267C728", size = 16 }  # disc 0x82679640
+0x8267C738 = { name = "sub_8267C738", size = 16 }  # disc 0x82679650
+0x8267C748 = { name = "sub_8267C748", size = 16 }  # disc 0x82679660
+0x826826A8 = { name = "sub_826826A8" }  # disc 0x8267F508
+0x826867E0 = { name = "sub_826867E0" }  # disc 0x826834D8
+0x826A17E0 = { name = "sub_826A17E0" }  # disc 0x8269E610
+0x826A1810 = { name = "sub_826A1810" }  # disc 0x8269E640
+0x826A1840 = { name = "sub_826A1840" }  # disc 0x8269E670
+0x826A37C0 = { name = "sub_826A37C0" }  # disc 0x826A0468
+0x826ED4A0 = { name = "sub_826ED4A0" }  # disc 0x826EA688
+0x82726C68 = { name = "sub_82726C68" }  # disc 0x82723F48
+0x827282B8 = { name = "sub_827282B8" }  # disc 0x82725598
+0x82728DB8 = { name = "sub_82728DB8" }  # disc 0x82726098
+0x82728DE0 = { name = "sub_82728DE0" }  # disc 0x827260C0
+0x827CD9D8 = { name = "sub_827CD9D8" }  # disc 0x827CA9F8
+0x8282C640 = { name = "sub_8282C640" }  # disc 0x82828DF0
+0x82841ED8 = { name = "sub_82841ED8" }  # disc 0x8283E780
+0x82876D40 = { name = "sub_82876D40" }  # disc 0x82873620
+0x82876D50 = { name = "sub_82876D50" }  # disc 0x82873630
+0x828773D8 = { name = "sub_828773D8" }  # disc 0x82873CC0
+0x82879158 = { name = "sub_82879158" }  # disc 0x82875A30
+0x82880250 = { name = "sub_82880250" }  # disc 0x8287CB20
+0x82881778 = { name = "sub_82881778" }  # disc 0x8287E070
+0x828888D8 = { name = "sub_828888D8" }  # disc 0x82885118
+0x828888E0 = { name = "sub_828888E0" }  # disc 0x82885120
+0x8288C5C0 = { name = "sub_8288C5C0" }  # disc 0x82888CF0
+0x828915F0 = { name = "sub_828915F0" }  # disc 0x8288DE10
+0x82891618 = { name = "sub_82891618" }  # disc 0x8288DE38
+0x82892AD8 = { name = "sub_82892AD8" }  # disc 0x8288F2F8
+0x82892AF8 = { name = "sub_82892AF8" }  # disc 0x8288F318
+0x82892C88 = { name = "sub_82892C88" }  # disc 0x8288F4A8
+0x82892D98 = { name = "sub_82892D98" }  # disc 0x8288F5B8
+0x82892DB8 = { name = "sub_82892DB8" }  # disc 0x8288F5D8
+0x82892E88 = { name = "sub_82892E88" }  # disc 0x8288F6A8
+0x82892EA8 = { name = "sub_82892EA8" }  # disc 0x8288F6C8
+0x82892EC8 = { name = "sub_82892EC8" }  # disc 0x8288F6E8
+0x82892EE8 = { name = "sub_82892EE8" }  # disc 0x8288F708
+0x82892F08 = { name = "sub_82892F08" }  # disc 0x8288F728
+0x82892F28 = { name = "sub_82892F28" }  # disc 0x8288F748
+0x82893200 = { name = "sub_82893200" }  # disc 0x8288FA20
+0x82893220 = { name = "sub_82893220" }  # disc 0x8288FA40
+0x82893328 = { name = "sub_82893328" }  # disc 0x8288FB48
+0x82893348 = { name = "sub_82893348" }  # disc 0x8288FB68
+0x82893460 = { name = "sub_82893460" }  # disc 0x8288FC80
+0x82893A50 = { name = "sub_82893A50" }  # disc 0x82890270
+0x82893A70 = { name = "sub_82893A70" }  # disc 0x82890290
+0x82893AB0 = { name = "sub_82893AB0" }  # disc 0x828902D0
+0x82893AD0 = { name = "sub_82893AD0" }  # disc 0x828902F0
+0x82893F38 = { name = "sub_82893F38" }  # disc 0x82890758
+0x82893FD8 = { name = "sub_82893FD8" }  # disc 0x828907F8
+0x828951A8 = { name = "sub_828951A8" }  # disc 0x828919C8
+0x828951B8 = { name = "sub_828951B8" }  # disc 0x828919D8
+0x828951C8 = { name = "sub_828951C8" }  # disc 0x828919E8
+0x828951D8 = { name = "sub_828951D8" }  # disc 0x828919F8
+0x828951E8 = { name = "sub_828951E8" }  # disc 0x82891A08
+0x828951F8 = { name = "sub_828951F8" }  # disc 0x82891A18
+0x82895208 = { name = "sub_82895208" }  # disc 0x82891A28
+0x82895218 = { name = "sub_82895218" }  # disc 0x82891A38
+0x828956A0 = { name = "sub_828956A0" }  # disc 0x82891EC0
+0x8289A6F8 = { name = "sub_8289A6F8" }  # disc 0x82896F18
+0x8289B150 = { name = "sub_8289B150" }  # disc 0x82897970
+0x8289B170 = { name = "sub_8289B170" }  # disc 0x82897990
+0x8289B190 = { name = "sub_8289B190" }  # disc 0x828979B0
+0x8289B1D8 = { name = "sub_8289B1D8" }  # disc 0x828979F8
+0x8289DB50 = { name = "sub_8289DB50" }  # disc 0x8289A370
+0x828A0318 = { name = "sub_828A0318" }  # disc 0x8289CB38
+0x828A1EE0 = { name = "sub_828A1EE0" }  # disc 0x8289E700
+0x828A7A00 = { name = "sub_828A7A00" }  # disc 0x828A4220
+0x828A9E68 = { name = "sub_828A9E68" }  # disc 0x828A6688
+0x828B36C0 = { name = "sub_828B36C0" }  # disc 0x828AFEE0
+0x828B88E0 = { name = "sub_828B88E0" }  # disc 0x828B5100
+0x828B8930 = { name = "sub_828B8930" }  # disc 0x828B5150
+0x828B8950 = { name = "sub_828B8950" }  # disc 0x828B5170
+0x828B8970 = { name = "sub_828B8970" }  # disc 0x828B5190
+0x828B8988 = { name = "sub_828B8988" }  # disc 0x828B51A8
+0x828B89A0 = { name = "sub_828B89A0" }  # disc 0x828B51C0
+0x828B89B8 = { name = "sub_828B89B8" }  # disc 0x828B51D8
+0x828B89D0 = { name = "sub_828B89D0" }  # disc 0x828B51F0
+0x828B89E8 = { name = "sub_828B89E8" }  # disc 0x828B5208
+0x828B8A00 = { name = "sub_828B8A00" }  # disc 0x828B5220
+0x828B8A18 = { name = "sub_828B8A18" }  # disc 0x828B5238
+0x828B8A30 = { name = "sub_828B8A30" }  # disc 0x828B5250
+0x828B8A48 = { name = "sub_828B8A48" }  # disc 0x828B5268
+0x828B8A60 = { name = "sub_828B8A60" }  # disc 0x828B5280
+0x828B8A78 = { name = "sub_828B8A78" }  # disc 0x828B5298
+0x828B8A90 = { name = "sub_828B8A90" }  # disc 0x828B52B0
+0x828B8AA8 = { name = "sub_828B8AA8" }  # disc 0x828B52C8
+0x828B8AC0 = { name = "sub_828B8AC0" }  # disc 0x828B52E0
+0x828C7420 = { name = "sub_828C7420" }  # disc 0x828C3C40
+0x829161D8 = { name = "sub_829161D8" }  # disc 0x829129D0
+0x82916598 = { name = "sub_82916598" }  # disc 0x82912D80
+0x82917418 = { name = "sub_82917418" }  # disc 0x82913BD8
+0x82917438 = { name = "sub_82917438" }  # disc 0x82913BF8
+0x829177F8 = { name = "sub_829177F8" }  # unresolved branch target
+0x82917BE0 = { name = "sub_82917BE0" }  # disc 0x82913F38
+0x82917C38 = { name = "sub_82917C38" }  # disc 0x829143A0
+0x82917D70 = { name = "sub_82917D70" }  # disc 0x829144D8
+0x82919638 = { name = "sub_82919638" }  # disc 0x82915E08
+0x82919640 = { name = "sub_82919640" }  # disc 0x82915E10
+0x82919648 = { name = "sub_82919648" }  # disc 0x82915E18
+0x82919650 = { name = "sub_82919650" }  # disc 0x82915E20
+0x82919658 = { name = "sub_82919658" }  # disc 0x82915E28
+0x82919830 = { name = "sub_82919830" }  # disc 0x82916040
+0x8291B7D8 = { name = "sub_8291B7D8" }  # disc 0x82917F70
+0x8291B7E0 = { name = "sub_8291B7E0" }  # disc 0x82917F78
+0x8291B7E8 = { name = "sub_8291B7E8" }  # disc 0x82917F80
+0x8291C2F0 = { name = "sub_8291C2F0" }  # disc 0x82918A78
+0x8291CAC8 = { name = "sub_8291CAC8" }  # disc 0x82919250
+0x8291D4F0 = { name = "sub_8291D4F0" }  # disc 0x82919BE8
+0x8291D510 = { name = "sub_8291D510" }  # disc 0x82919C08
+0x8291D530 = { name = "sub_8291D530" }  # disc 0x82919C28
+0x8291D550 = { name = "sub_8291D550" }  # disc 0x82919C48
+0x8291D570 = { name = "sub_8291D570" }  # disc 0x82919C68
+0x8291D590 = { name = "sub_8291D590" }  # disc 0x82919C88
+0x8291D5B0 = { name = "sub_8291D5B0" }  # disc 0x82919CA8
+0x8291D5D0 = { name = "sub_8291D5D0" }  # disc 0x82919CC8
+0x8291D830 = { name = "sub_8291D830" }  # disc 0x82919F40
+0x8291D848 = { name = "sub_8291D848" }  # disc 0x82919F58
+0x8291D860 = { name = "sub_8291D860" }  # disc 0x82919F70
+0x8291D878 = { name = "sub_8291D878" }  # disc 0x82919F88
+0x8291D890 = { name = "sub_8291D890" }  # disc 0x82919FA0
+0x8291D8A8 = { name = "sub_8291D8A8" }  # disc 0x82919FB8
+0x8291D8C0 = { name = "sub_8291D8C0" }  # disc 0x82919FD0
+0x8291D8D8 = { name = "sub_8291D8D8" }  # disc 0x82919FE8
+0x8291D8F0 = { name = "sub_8291D8F0" }  # disc 0x8291A000
+0x8291D908 = { name = "sub_8291D908" }  # disc 0x8291A018
+0x8291DB40 = { name = "sub_8291DB40" }  # disc 0x8291A2B0
+0x8291DDC8 = { name = "sub_8291DDC8" }  # disc 0x8291A568
+0x8291DE48 = { name = "sub_8291DE48" }  # disc 0x8291A5F0
+0x8291DEF8 = { name = "sub_8291DEF8" }  # disc 0x8291A6A0
+0x8292A2A8 = { name = "sub_8292A2A8" }  # disc 0x82926BF0
+0x8292B4E0 = { name = "sub_8292B4E0" }  # disc 0x82927E80
+0x8292EDC0 = { name = "sub_8292EDC0" }  # disc 0x8292B760
+0x8292FC40 = { name = "sub_8292FC40" }  # disc 0x8292C5E0
+0x82930D70 = { name = "sub_82930D70" }  # disc 0x8292D710
+0x82959D40 = { name = "sub_82959D40" }  # disc 0x829566E0
+0x82959D80 = { name = "sub_82959D80" }  # disc 0x82956720
+0x82974938 = { name = "sub_82974938" }  # disc 0x82971368
+0x82978BE0 = { name = "sub_82978BE0" }  # disc 0x82975658
+0x82978C00 = { name = "sub_82978C00" }  # disc 0x82975678
+0x8297A0C0 = { name = "sub_8297A0C0" }  # disc 0x82976B38
+0x8298CDC0 = { name = "sub_8298CDC0" }  # disc 0x82989880
+0x829A5AC8 = { name = "sub_829A5AC8" }  # disc 0x829A2680
+0x829AA370 = { name = "sub_829AA370" }  # disc 0x829A6F28
+0x829B3E50 = { name = "sub_829B3E50" }  # disc 0x829B0A08
+0x829DC1C0 = { name = "sub_829DC1C0" }  # disc 0x829D8D78
+0x82A14220 = { name = "sub_82A14220" }  # disc 0x82A10D38
+0x82A4D098 = { name = "sub_82A4D098" }  # disc 0x82A49670
+0x82A6CF40 = { name = "sub_82A6CF40" }  # disc 0x82A69878
+0x82AF4AF8 = { name = "sub_82AF4AF8" }  # disc 0x82AF1770
+0x82B00028 = { name = "sub_82B00028", size = 84 }  # disc 0x82AFCB40
+0x82B26A28 = { name = "sub_82B26A28" }  # disc 0x826A9548
+0x82B3DB48 = { name = "sub_82B3DB48" }  # disc 0x82B39E98
+0x82B3DB60 = { name = "sub_82B3DB60" }  # disc 0x82B39EB0
+0x82B42938 = { name = "sub_82B42938" }  # disc 0x82B3EC38
+0x82B53AC0 = { name = "sub_82B53AC0" }  # disc 0x82B4FD58
+0x82B599B8 = { name = "sub_82B599B8" }  # disc 0x82B55C58
+0x82B6E7D0 = { name = "sub_82B6E7D0" }  # disc 0x82B6A778
+0x82B6EA38 = { name = "sub_82B6EA38" }  # disc 0x82B6A9E0
+0x82B8AC50 = { name = "sub_82B8AC50" }  # disc 0x82B87120
+0x82B98D48 = { name = "sub_82B98D48" }  # disc 0x82873C90
+0x82B98D60 = { name = "sub_82B98D60" }  # disc 0x82873CA8
+0x82BD34D0 = { name = "sub_82BD34D0" }  # disc 0x82BCF600
+0x82BDC028 = { name = "sub_82BDC028" }  # disc 0x82BD8108
+0x82C82CF0 = { name = "sub_82C82CF0" }  # disc 0x82C7ED90
+0x82C850B0 = { name = "sub_82C850B0" }  # disc 0x82C80FE0
+0x82C850B8 = { name = "sub_82C850B8" }  # disc 0x82C80FE8
+0x82C850C8 = { name = "sub_82C850C8" }  # disc 0x82C80FF8
+0x82C850D0 = { name = "sub_82C850D0" }  # disc 0x82C81000
+0x82C8B188 = { name = "sub_82C8B188" }  # disc 0x82C87048
+0x82C8B190 = { name = "sub_82C8B190" }  # disc 0x82C87050
+0x82C8B1A0 = { name = "sub_82C8B1A0" }  # disc 0x82C87060
+0x82C8B1A8 = { name = "sub_82C8B1A8" }  # disc 0x82C87068
+0x82C8B1B0 = { name = "sub_82C8B1B0" }  # disc 0x82C87070
+0x82C8B1B8 = { name = "sub_82C8B1B8" }  # disc 0x82C87078
+0x82C8B1C0 = { name = "sub_82C8B1C0" }  # disc 0x82C87080
+0x82C8B1C8 = { name = "sub_82C8B1C8" }  # disc 0x82C87088
+0x82C8B478 = { name = "sub_82C8B478" }  # disc 0x82C87328
+0x82C8B488 = { name = "sub_82C8B488" }  # disc 0x82C87338
+0x82C8B490 = { name = "sub_82C8B490" }  # disc 0x82C87340
+0x82C8B498 = { name = "sub_82C8B498" }  # disc 0x82C87348
+0x82C8BA70 = { name = "sub_82C8BA70" }  # disc 0x82C87920
+0x82C8C578 = { name = "sub_82C8C578" }  # disc 0x82C887B0
+0x82C8D2C0 = { name = "sub_82C8D2C0" }  # disc 0x82C89520
+0x82C90050 = { name = "sub_82C90050" }  # disc 0x82C8C298
+0x82CFF758 = { name = "sub_82CFF758" }  # disc 0x82CFB920
+0x82CFF778 = { name = "sub_82CFF778" }  # disc 0x82CFB940
+0x82D06C50 = { name = "sub_82D06C50" }  # disc 0x82D02F98
+0x82D07248 = { name = "sub_82D07248" }  # disc 0x82D03580
+0x82DAFEB0 = { name = "sub_82DAFEB0" }  # disc 0x82DAA458
+0x82DAFEC8 = { name = "sub_82DAFEC8" }  # disc 0x82DAA470
+0x82DAFEE0 = { name = "sub_82DAFEE0" }  # disc 0x82DAA488
+0x82DAFEF8 = { name = "sub_82DAFEF8" }  # disc 0x82DAA4A0
+0x82DAFF10 = { name = "sub_82DAFF10" }  # disc 0x82DAA4B8
+0x82DAFF28 = { name = "sub_82DAFF28" }  # disc 0x82DAA4D0
+0x82DAFF40 = { name = "sub_82DAFF40" }  # disc 0x82DAA4E8
+0x82DAFF58 = { name = "sub_82DAFF58" }  # disc 0x82DAA500
+0x82DAFF70 = { name = "sub_82DAFF70" }  # disc 0x82DAA518
+0x82DAFF88 = { name = "sub_82DAFF88" }  # disc 0x82DAA530
+0x82DAFFA0 = { name = "sub_82DAFFA0" }  # disc 0x82DAA548
+0x82DB45C0 = { name = "sub_82DB45C0" }  # disc 0x82DAEBB8
+0x82E09D30 = { name = "sub_82E09D30" }  # disc 0x82E03500
+0x82E1CC78 = { name = "sub_82E1CC78" }  # disc 0x82E16698
+0x82E6CFB8 = { name = "sub_82E6CFB8" }  # disc 0x82E66AC8
+0x82E6D3D8 = { name = "sub_82E6D3D8" }  # disc 0x82E66EE8
+0x82E6D6F0 = { name = "sub_82E6D6F0" }  # disc 0x82E67200
+0x82E6EFA0 = { name = "sub_82E6EFA0" }  # disc 0x82E68AB0
+0x82E6F248 = { name = "sub_82E6F248" }  # disc 0x82E68D58
+0x82E6F2E0 = { name = "sub_82E6F2E0" }  # disc 0x82E68DF0
+0x82E6F378 = { name = "sub_82E6F378" }  # disc 0x82E68E88
+0x82E756B8 = { name = "sub_82E756B8" }  # disc 0x82E6F1C8
+0x82E75F40 = { name = "sub_82E75F40" }  # disc 0x82E6FBC0
+0x82E75F60 = { name = "sub_82E75F60" }  # disc 0x82E6FBE0
+0x82E760F8 = { name = "sub_82E760F8" }  # disc 0x82E6FD20
+0x82E76118 = { name = "sub_82E76118" }  # disc 0x82E6FD40
+0x82E76D98 = { name = "sub_82E76D98" }  # disc 0x82E70970
+0x82E76DB8 = { name = "sub_82E76DB8" }  # disc 0x82E70990
+0x82E8BA60 = { name = "sub_82E8BA60" }  # disc 0x82E852F0
+0x82E8BDE8 = { name = "sub_82E8BDE8" }  # disc 0x82E85678
+0x82E8BE08 = { name = "sub_82E8BE08" }  # disc 0x82E85698
+0x82E8BE10 = { name = "sub_82E8BE10" }  # disc 0x82E856A0
+0x82E8BE18 = { name = "sub_82E8BE18" }  # disc 0x82E856A8
+0x82E9B978 = { name = "sub_82E9B978" }  # disc 0x82E953C0
+0x82EAAA78 = { name = "sub_82EAAA78" }  # disc 0x82EA4700
+0x82EB2A10 = { name = "sub_82EB2A10" }  # disc 0x82EAC698
+# Only reached through function tables or code-built pointers (found by scanning the TU2 image).
+0x822A3F88 = { name = "sub_822A3F88" }  # table/pointer target, new in TU2
+0x822D65E0 = { name = "sub_822D65E0" }  # function on disc, disc=822D61B0
+0x8230EE58 = { name = "sub_8230EE58" }  # table/pointer target, new in TU2
+0x8230EE80 = { name = "sub_8230EE80" }  # table/pointer target, new in TU2
+0x82357284 = { name = "sub_82357284" }  # table/pointer target, new in TU2
+0x82373698 = { name = "sub_82373698" }  # table/pointer target, new in TU2
+0x82384430 = { name = "sub_82384430" }  # function on disc, disc=82382CA8
+0x824DFF78 = { name = "sub_824DFF78" }  # table/pointer target, new in TU2
+0x8260E248 = { name = "sub_8260E248" }  # function on disc, disc=8260AC88
+0x8260EEA0 = { name = "sub_8260EEA0" }  # table/pointer target, new in TU2
+0x826168E8 = { name = "sub_826168E8" }  # function on disc, disc=826131A8
+0x826168F8 = { name = "sub_826168F8" }  # function on disc, disc=826131C8
+0x8264F210 = { name = "sub_8264F210" }  # function on disc, disc=8264C6A0
+0x8267C5D0 = { name = "sub_8267C5D0" }  # table/pointer target, new in TU2
+0x8267FED8 = { name = "sub_8267FED8" }  # function on disc, disc=8267CDF0
+0x8268E498 = { name = "sub_8268E498" }  # function on disc, disc=8268AFF8
+0x827CD9B8 = { name = "sub_827CD9B8" }  # table/pointer target, new in TU2
+0x82913F50 = { name = "sub_82913F50" }  # table/pointer target, new in TU2
+0x82913F60 = { name = "sub_82913F60" }  # table/pointer target, new in TU2
+0x829161E0 = { name = "sub_829161E0" }  # table/pointer target, new in TU2
+0x829165A0 = { name = "sub_829165A0" }  # function on disc, disc=82912D88
+0x829177B0 = { name = "sub_829177B0" }  # table/pointer target, new in TU2
+0x829177B8 = { name = "sub_829177B8" }  # table/pointer target, new in TU2
+0x829177C8 = { name = "sub_829177C8" }  # table/pointer target, new in TU2
+0x82917BF0 = { name = "sub_82917BF0" }  # table/pointer target, new in TU2
+0x82919660 = { name = "sub_82919660" }  # function on disc, disc=82915E60
+0x82919838 = { name = "sub_82919838" }  # function on disc, disc=82916048
+0x8291B130 = { name = "sub_8291B130" }  # function on disc, disc=82917838
+0x8291D3E8 = { name = "sub_8291D3E8" }  # function on disc, disc=82919AF0
+0x8291D5F0 = { name = "sub_8291D5F0" }  # function on disc, disc=82919CF0
+0x8291D920 = { name = "sub_8291D920" }  # table/pointer target, new in TU2
+0x8291D938 = { name = "sub_8291D938" }  # table/pointer target, new in TU2
+0x8291D950 = { name = "sub_8291D950" }  # table/pointer target, new in TU2
+0x8291D968 = { name = "sub_8291D968" }  # function on disc, disc=8291A0D8
+0x82B92388 = { name = "sub_82B92388" }  # function on disc, disc=82B8E738
+0x82B98D78 = { name = "sub_82B98D78" }  # function on disc, disc=82B95230
+0x82C850A8 = { name = "sub_82C850A8" }  # function on disc, disc=82C80FD8
+0x82C8B198 = { name = "sub_82C8B198" }  # function on disc, disc=82C87058
+0x82C8B480 = { name = "sub_82C8B480" }  # function on disc, disc=82C87330
+0x82C9EFD0 = { name = "sub_82C9EFD0" }  # table/pointer target, new in TU2
+0x82D0D800 = { name = "sub_82D0D800" }  # table/pointer target, new in TU2
+0x82E1A030 = { name = "sub_82E1A030" }  # table/pointer target, new in TU2
+0x82E1A040 = { name = "sub_82E1A040" }  # table/pointer target, new in TU2
+0x82E9B138 = { name = "sub_82E9B138" }  # table/pointer target, new in TU2
+0x82EB0010 = { name = "sub_82EB0010" }  # table/pointer target, new in TU2
+# Found after a crash at 0x827CC418: functions the disc build registers that TU2's analysis misses,
+# and table-only functions that are not branch labels.
+0x8244BDA4 = { name = "sub_8244BDA4" }  # function on disc
+0x8272AC00 = { name = "sub_8272AC00" }  # function on disc
+0x827CC418 = { name = "sub_827CC418" }  # table/pointer target 
+0x8291D3E0 = { name = "sub_8291D3E0" }  # function on disc

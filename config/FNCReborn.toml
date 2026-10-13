@@ -1,11 +1,18 @@
 # FNC Reborn settings. Setup copies this file to dist\FNCReborn.toml once and
 # never overwrites it, so your changes are kept. The in-game Settings > DISPLAY
-# tab changes some of these for you.
+# and EXTRAS tabs change some of these for you.
 
 gpu_plugin = "xenos"
 gpu_backend = "d3d12"
 log_level = "info"
 log_file = "FNCReborn.log"
+
+# DLC and Legacy Mode (Settings > EXTRAS).
+fnc_dlc_unlock = true        # all DLC: boxers, Legends venues, Bare Knuckles, boosts, XP packs
+fnc_skill_level_cap = 320    # Legacy Mode skill level cap: 220 (original) .. 340 (every skill maxed)
+license_mask = 4294967295    # report every DLC license as owned
+fnc_debug_menu = false       # developer menu (restart after changing)
+fnc_cache_drive = true       # the game's cache: drive, needed for instant replays
 
 # Frame rate cap: 30 (original), 60, 120 or 144.
 fnc_frame_rate = 60

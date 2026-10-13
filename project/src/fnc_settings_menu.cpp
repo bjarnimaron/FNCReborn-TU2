@@ -1,15 +1,16 @@
-// [FNC-MENU] PC "DISPLAY" tab in the game's own Settings screen.
+// [FNC-MENU] PC "DISPLAY" and "EXTRAS" tabs in the game's own Settings screen.
 //
 // The UI side (new category + rows) is added to the Apt movie gamesettingdata
 // inside dist\game\databigs\xenon\fe.big by tools\display_tab\aptpatch_display.py
 // (run by setup). Without that patch the tab is simply not there.
 // The game's Settings screen reads/writes every row through the native Apt
 // object ION_Settings. Its three methods are plain recompiled functions:
-//   sub_82E64098 GetDefaultSettingValue(category, setting)        -> mgr vtable +4
-//   sub_82E64120 GetCurrentSettingValue(category, setting)        -> mgr vtable +8
-//   sub_82E641A8 SetCurrentSettingValue(category, setting, value) -> mgr vtable +12
-// (registered by sub_82DEE870; mgr = *(u32*)0x83050E70). For our category id
-// (kCategory) we answer from / write to the runtime cvars and FNCReborn.toml.
+//   sub_82E6A610 GetDefaultSettingValue(category, setting)        -> mgr vtable +4
+//   sub_82E6A698 GetCurrentSettingValue(category, setting)        -> mgr vtable +8
+//   sub_82E6A720 SetCurrentSettingValue(category, setting, value) -> mgr vtable +12
+// (registered by sub_82DF4E60; mgr = *(u32*)0x83068730). For our category id
+// ids (kCategories: DISPLAY 200 and EXTRAS 210) we answer from / write to the
+// runtime cvars and FNCReborn.toml.
 //
 // Returning a number to Apt: the game has no tiny "make int" helper we know of,
 // so we borrow a real int-valued setting ("donor", learned from the game's own
@@ -43,42 +44,50 @@
 
 
 extern "C" {
-void __imp__sub_82E64098(PPCContext& __restrict ctx, uint8_t* base);
-void __imp__sub_82E64120(PPCContext& __restrict ctx, uint8_t* base);
-void __imp__sub_82E641A8(PPCContext& __restrict ctx, uint8_t* base);
-void sub_825B1908(PPCContext& __restrict ctx, uint8_t* base);  // Apt arg(i) -> value*
-void sub_825AE3F8(PPCContext& __restrict ctx, uint8_t* base);  // value* -> int
-void sub_823B0BA8(PPCContext& __restrict ctx, uint8_t* base);  // holder init
-void sub_82B40288(PPCContext& __restrict ctx, uint8_t* base);  // holder -> value*
-void sub_82833050(PPCContext& __restrict ctx, uint8_t* base);  // holder2 = value
-void sub_82833110(PPCContext& __restrict ctx, uint8_t* base);  // set-call result
+void __imp__sub_82E6A610(PPCContext& __restrict ctx, uint8_t* base);
+void __imp__sub_82E6A698(PPCContext& __restrict ctx, uint8_t* base);
+void __imp__sub_82E6A720(PPCContext& __restrict ctx, uint8_t* base);
+void sub_825B4FF8(PPCContext& __restrict ctx, uint8_t* base);  // Apt arg(i) -> value*
+void sub_825B1AD8(PPCContext& __restrict ctx, uint8_t* base);  // value* -> int
+void sub_823C8578(PPCContext& __restrict ctx, uint8_t* base);  // holder init
+void sub_8283FED0(PPCContext& __restrict ctx, uint8_t* base);  // holder -> value*
+void sub_82836780(PPCContext& __restrict ctx, uint8_t* base);  // holder2 = value
+void sub_82836758(PPCContext& __restrict ctx, uint8_t* base);  // set-call result
 }
 
 namespace {
 
-constexpr uint32_t kCategory = 200;     // must match aptpatch_display.py
-constexpr uint32_t kFirstSetting = 201;
-constexpr uint32_t kMgrPtr = 0x83050E70;  // lis r11,-31995 (0x8305) + 3696
-constexpr uint32_t kHolderGet = 0x82F9E0BC;
-constexpr uint32_t kHolderSet = 0x82F9E0C4;
+constexpr uint32_t kCategories[] = {200, 210};  // must match TABS in aptpatch_display.py
+constexpr uint32_t kMgrPtr = 0x83068730;
+constexpr uint32_t kHolderGet = 0x82FB587C;
+constexpr uint32_t kHolderSet = 0x82FB5884;
 
 struct Row {
+  uint32_t id;            // setting id (same as in the Apt patch)
   const char* cvar;
   const char* values[5];  // cvar text per option index
   int count;
   int def;                // default option index
   bool restart;
+  bool numeric;           // pick the nearest option when the cvar holds another number
 };
 
-// Order = setting ids 201, 202, ... (same order as the labels in the Apt patch).
+// Same order and labels as the rows in the Apt patch.
 const Row kRows[] = {
-    {"fnc_frame_rate", {"30", "60", "120", "144"}, 4, 1, true},
-    {"vsync", {"false", "true"}, 2, 1, false},
-    {"resolution_scale", {"1", "2", "3"}, 3, 0, true},
-    {"swap_post_effect", {"none", "fxaa", "fxaa_extreme"}, 3, 0, false},
-    {"fullscreen", {"false", "true"}, 2, 1, false},
+    // DISPLAY (category 200)
+    {201, "fnc_frame_rate", {"30", "60", "120", "144"}, 4, 1, true, true},
+    {202, "vsync", {"false", "true"}, 2, 1, false, false},
+    {203, "resolution_scale", {"1", "2", "3"}, 3, 0, true, true},
+    {204, "swap_post_effect", {"none", "fxaa", "fxaa_extreme"}, 3, 0, false, false},
+    {205, "fullscreen", {"false", "true"}, 2, 1, false, false},
+    // EXTRAS (category 210)
+    {211, "fnc_dlc_unlock", {"false", "true"}, 2, 1, false, false},
+    {212, "fnc_skill_level_cap", {"220", "260", "300", "320", "340"}, 5, 3, false, true},
+    {213, "fnc_debug_menu", {"false", "true"}, 2, 0, true, false},
+    {214, "fnc_fp_enable", {"false", "true"}, 2, 1, true, false},
+    {215, "fnc_view_first_person", {"false", "true"}, 2, 0, true, false},
+    {216, "fnc_view_boxer", {"0", "1"}, 2, 0, true, true},
 };
-constexpr uint32_t kRowCount = sizeof(kRows) / sizeof(kRows[0]);
 
 inline uint8_t* Host(uint8_t* base, uint32_t a) {
   return base + a + (a >= 0xE0000000u ? 0x1000u : 0u);
@@ -92,25 +101,33 @@ inline void St(uint8_t* base, uint32_t a, uint32_t v) {
 
 uint32_t ArgPtr(PPCContext& ctx, uint8_t* base, int i) {
   ctx.r3.u64 = uint64_t(i);
-  sub_825B1908(ctx, base);
+  sub_825B4FF8(ctx, base);
   return ctx.r3.u32;
 }
 int32_t ArgInt(PPCContext& ctx, uint8_t* base, int i) {
   ctx.r3.u64 = ArgPtr(ctx, base, i);
-  sub_825AE3F8(ctx, base);
+  sub_825B1AD8(ctx, base);
   return int32_t(ctx.r3.u32);
 }
 
-bool IsOurs(int32_t a0, int32_t a1) { return a0 == int32_t(kCategory) || a1 == int32_t(kCategory); }
-int32_t SettingOf(int32_t a0, int32_t a1) { return a0 == int32_t(kCategory) ? a1 : a0; }
+bool IsCategory(int32_t v) {
+  for (uint32_t c : kCategories) {
+    if (v == int32_t(c)) return true;
+  }
+  return false;
+}
+bool IsOurs(int32_t a0, int32_t a1) { return IsCategory(a0) || IsCategory(a1); }
+int32_t SettingOf(int32_t a0, int32_t a1) { return IsCategory(a0) ? a1 : a0; }
 const Row* RowOf(int32_t setting) {
-  uint32_t i = uint32_t(setting) - kFirstSetting;
-  return i < kRowCount ? &kRows[i] : nullptr;
+  for (const Row& r : kRows) {
+    if (int32_t(r.id) == setting) return &r;
+  }
+  return nullptr;
 }
 
 int CurrentIndex(const Row& r) {
   std::string cur = rex::cvar::GetFlagByName(r.cvar);
-  if (std::string(r.cvar) == "fnc_frame_rate") {  // double: pick the nearest option
+  if (r.numeric) {  // pick the nearest option
     double v = std::atof(cur.c_str());
     int best = r.def;
     double bd = 1e9;
@@ -179,7 +196,7 @@ int g_logged = 0;
 // returns the Apt value pointer it produced.
 uint32_t CallMgr(PPCContext& ctx, uint8_t* base, uint32_t slot_off, uint32_t a0, uint32_t a1) {
   ctx.r3.u64 = kHolderGet;
-  sub_823B0BA8(ctx, base);
+  sub_823C8578(ctx, base);
   uint32_t mgr = Ld(base, kMgrPtr);
   uint32_t fn = Ld(base, Ld(base, mgr) + slot_off);
   ctx.r3.u64 = mgr;
@@ -235,7 +252,7 @@ bool ReturnInt(PPCContext& ctx, uint8_t* base, uint32_t slot_off, int32_t number
   }
   St(base, v + 8, uint32_t(number));
   ctx.r3.u64 = kHolderGet;
-  sub_82B40288(ctx, base);
+  sub_8283FED0(ctx, base);
   return true;
 }
 
@@ -255,39 +272,39 @@ void HandleGet(PPCContext& ctx, uint8_t* base, uint32_t slot_off, bool is_defaul
   REXLOG_INFO("[FNC-MENU] {}({}, {}) -> {}", is_default ? "GetDefault" : "GetCurrent", a0, a1, idx);
   if (!ReturnInt(ctx, base, slot_off, idx)) {
     ctx.r3.u64 = kHolderGet;  // empty holder -> undefined; the row shows its first option
-    sub_823B0BA8(ctx, base);
+    sub_823C8578(ctx, base);
     ctx.r3.u64 = kHolderGet;
-    sub_82B40288(ctx, base);
+    sub_8283FED0(ctx, base);
   }
 }
 
 }  // namespace
 
-extern "C" void sub_82E64098(PPCContext& __restrict ctx, uint8_t* base) {
-  HandleGet(ctx, base, 4, true, __imp__sub_82E64098);
+extern "C" void sub_82E6A610(PPCContext& __restrict ctx, uint8_t* base) {
+  HandleGet(ctx, base, 4, true, __imp__sub_82E6A610);
 }
 
-extern "C" void sub_82E64120(PPCContext& __restrict ctx, uint8_t* base) {
-  HandleGet(ctx, base, 8, false, __imp__sub_82E64120);
+extern "C" void sub_82E6A698(PPCContext& __restrict ctx, uint8_t* base) {
+  HandleGet(ctx, base, 8, false, __imp__sub_82E6A698);
 }
 
-extern "C" void sub_82E641A8(PPCContext& __restrict ctx, uint8_t* base) {
+extern "C" void sub_82E6A720(PPCContext& __restrict ctx, uint8_t* base) {
   int32_t a0 = ArgInt(ctx, base, 0);
   int32_t a1 = ArgInt(ctx, base, 1);
   if (!IsOurs(a0, a1)) {
-    __imp__sub_82E641A8(ctx, base);
+    __imp__sub_82E6A720(ctx, base);
     return;
   }
   uint32_t vptr = ArgPtr(ctx, base, 2);
   ctx.r3.u64 = vptr;
-  sub_825AE3F8(ctx, base);
+  sub_825B1AD8(ctx, base);
   int32_t index = int32_t(ctx.r3.u32);
   const Row* r = RowOf(SettingOf(a0, a1));
   REXLOG_INFO("[FNC-MENU] SetCurrent({}, {}, {})", a0, a1, index);
   if (r) Apply(*r, index);
   ctx.r3.u64 = kHolderSet;
   ctx.r4.u64 = vptr;
-  sub_82833050(ctx, base);
+  sub_82836780(ctx, base);
   ctx.r3.u64 = kHolderSet;
-  sub_82833110(ctx, base);
+  sub_82836758(ctx, base);
 }

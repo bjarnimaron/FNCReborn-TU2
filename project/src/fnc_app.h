@@ -9,6 +9,9 @@
 namespace fnc_prof {
 void Start(const void* func_mappings);  // src/fnc_sampler.cpp
 }
+namespace fnc_cache {
+void Mount();  // src/fnc_hooks.cpp (cache: drive)
+}
 namespace rex::ui { class ImGuiDrawer; class Window; }
 namespace fnc_fps {
 void Install(rex::ui::ImGuiDrawer* drawer, rex::ui::Window* window);  // src/fnc_fps_overlay.cpp (F1 FPS, F11 windowed)
@@ -35,6 +38,7 @@ class FncApp : public rex::ReXApp {
     // FNCReborn.exe.
     fnc_prof::Start(PPCImageConfig.func_mappings);
   }
+  void OnPreLaunchModule() override { fnc_cache::Mount(); }
   void OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) override {
     if (window()) window()->SetTitle("FNC Reborn");
     fnc_fps::Install(drawer, window());
@@ -74,16 +78,13 @@ class FncApp : public rex::ReXApp {
         paths.game_data_root = found;
       }
     }
-    // Saves used to live in Documents\fnc: move them to Documents\FNCReborn once.
-    // If the move fails (folder in use), keep using the old folder.
-    std::error_code ec;
-    auto old_dir = paths.user_data_root.parent_path() / "fnc";
-    if (!std::filesystem::exists(paths.user_data_root, ec) && std::filesystem::exists(old_dir, ec)) {
-      std::filesystem::rename(old_dir, paths.user_data_root, ec);
-      if (ec) {
-        if (paths.cache_root == paths.user_data_root / "cache") paths.cache_root = old_dir / "cache";
-        paths.user_data_root = old_dir;
-      }
+    // The TU2 build keeps its saves and DLC in Documents\FNCReborn-TU2, apart from the disc
+    // build's Documents\FNCReborn. (FNCReborn.toml is read after the paths are chosen, so a
+    // user_data_root set there has no effect.)
+    if (paths.user_data_root.filename() == "FNCReborn") {
+      auto tu2_dir = paths.user_data_root.parent_path() / "FNCReborn-TU2";
+      if (paths.cache_root == paths.user_data_root / "cache") paths.cache_root = tu2_dir / "cache";
+      paths.user_data_root = tu2_dir;
     }
   }
 };

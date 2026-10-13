@@ -10,6 +10,16 @@ If you redistribute FNC Reborn, or any work based on it, you must keep this
 NOTICE file with it and credit the original project as "FNC Reborn by
 Whompay" (Apache License 2.0, section 4).
 
+This is a modified version of FNC Reborn ("FNC Reborn - TU2 + DLC"), adding
+title update 2 and DLC support. Modified files: config/fnc_manifest.toml,
+config/FNCReborn.toml, project/CMakeLists.txt, project/src/fnc_app.h,
+project/src/fnc_hooks.cpp, project/src/fnc_sampler.cpp,
+project/src/fnc_settings_menu.cpp, project/src/player_camera.cpp,
+tools/display_tab/aptpatch_display.py, scripts/setup.ps1, README.md and
+docs/BUILDING.md. Added files: project/src/fnc_dlc_unlock.cpp,
+project/src/fnc_skill_cap.cpp, tools/fnc_content/ and docs/TU2_AND_DLC.md.
+The modifications are released under the same license.
+
 "Fight Night" and "Fight Night Champion" are trademarks of their owner. FNC
 Reborn is not affiliated with or endorsed by the rights holders, and this notice
 does not cover the game or any file extracted or generated from it.

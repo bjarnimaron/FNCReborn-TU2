@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <csignal>
 #include <cstdint>
 #include <cstdio>
 #include <filesystem>
@@ -253,6 +254,18 @@ LONG WINAPI CrashFilter(EXCEPTION_POINTERS* ep) {
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
+// REX_FATAL (e.g. a call to an unregistered function) ends with abort(), which is not an
+// exception: report it the same way, from the aborting thread's own stack.
+void AbortHandler(int) {
+  CONTEXT ctx{};
+  RtlCaptureContext(&ctx);
+  EXCEPTION_RECORD er{};
+  er.ExceptionCode = 0xE0000ABE;  // marker: abort()
+  er.ExceptionAddress = reinterpret_cast<void*>(ctx.Rip);
+  EXCEPTION_POINTERS ep{&er, &ctx};
+  CrashFilter(&ep);
+}
+
 void SamplerMain() {
   REXLOG_INFO("[FNC-PROF] sampler started, {} game functions indexed", g_fns.size());
 
@@ -359,6 +372,7 @@ void Start(const void* func_mappings) {
   BuildTable(static_cast<const Mapping*>(func_mappings));
   g_crash_path = (dir / "FNCReborn_crash.txt").wstring();
   SetUnhandledExceptionFilter(CrashFilter);
+  std::signal(SIGABRT, AbortHandler);
   REXLOG_INFO("[FNC-CRASH] crash reports go to FNCReborn_crash.txt ({} game functions indexed)",
               g_fns.size());
   std::error_code ec;

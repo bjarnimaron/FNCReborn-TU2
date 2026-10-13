@@ -1,4 +1,4 @@
-"""Adds a "DISPLAY" tab to Fight Night Champion's Settings screen.
+"""Adds "DISPLAY" and "EXTRAS" tabs to Fight Night Champion's Settings screen.
 
 Patches the Apt movie gamesettingdata.big inside dist\\game\\databigs\\xenon\\fe.big:
   * appends new strings to the Apt constant file (items array moved to the end),
@@ -9,7 +9,12 @@ Patches the Apt movie gamesettingdata.big inside dist\\game\\databigs\\xenon\\fe
     member must not be bigger compressed than uncompressed) and appends it
     to fe.big, repointing that file's 16-byte table entry.
 Values for the new rows are served natively by project\\src\\fnc_settings_menu.cpp
-(category id 200, setting ids 201+; keep both files in sync).
+(category ids 200 and 210, setting ids category+1, +2, ...; keep both files in sync).
+
+The Legends Pack replaces the Settings screen with its own copy inside its dlc_main.big, so with
+the pack installed that copy must be patched too; its dlc.toc records the archive's size, which
+--toc updates:
+        python aptpatch_display.py <...>/dlc/data/xenon/dlc_main.big --toc <...>/dlc.toc
 
 Usage:  python aptpatch_display.py <path to fe.big>
 Creates <fe.big>.orig on first run and always patches from it, so re-running is safe.
@@ -22,14 +27,23 @@ from ebbig import read_index
 from refpack import unrefpack
 from refpack_enc import refpack
 
-CATEGORY = 200
-TAB_NAME = 'DISPLAY'
-ROWS = [  # (title, labels) -> setting ids 201, 202, ... ; must match kRows in fnc_settings_menu.cpp
-    ('FRAME RATE (RESTART)', ['30 FPS', '60 FPS', '120 FPS', '144 FPS']),
-    ('VSYNC', ['OFF', 'ON']),
-    ('RESOLUTION SCALE (RESTART)', ['1X', '2X', '3X']),
-    ('ANTI-ALIASING', ['OFF', 'FXAA', 'FXAA EXTREME']),
-    ('FULLSCREEN', ['OFF', 'ON']),
+TABS = [  # (category id, tab name, rows); a row = (title, labels) -> setting ids category+1, +2, ...
+    # Must match kRows in fnc_settings_menu.cpp.
+    (200, 'DISPLAY', [
+        ('FRAME RATE (RESTART)', ['30 FPS', '60 FPS', '120 FPS', '144 FPS']),
+        ('VSYNC', ['OFF', 'ON']),
+        ('RESOLUTION SCALE (RESTART)', ['1X', '2X', '3X']),
+        ('ANTI-ALIASING', ['OFF', 'FXAA', 'FXAA EXTREME']),
+        ('FULLSCREEN', ['OFF', 'ON']),
+    ]),
+    (210, 'EXTRAS', [
+        ('DLC CONTENT', ['LOCKED', 'UNLOCKED']),
+        ('SKILL LEVEL CAP', ['220', '260', '300', '320', '340']),
+        ('DEVELOPER MENU (RESTART)', ['OFF', 'ON']),
+        ('PLAYER CAMERA (RESTART)', ['OFF', 'ON']),
+        ('PLAYER CAMERA VIEW (RESTART)', ['THIRD PERSON', 'FIRST PERSON']),
+        ('PLAYER CAMERA BOXER (RESTART)', ['BOXER 1', 'BOXER 2']),
+    ]),
 ]
 CONTEXTS = ['FROM_MAIN_MENU', 'FROM_PAUSE_MENU', 'FROM_MOVIE_PAUSE_MENU', 'FROM_TRAINING_PAUSE_MENU',
             'FROM_PLAY_NOW_FLOW', 'FROM_LEGACY', 'FROM_AMATEUR_TOURNAMENT']
@@ -118,13 +132,41 @@ class Asm:
         start = len(self.b); body_fn(); self.b[hdr + 12:hdr + 16] = p32(len(self.b) - start)
 
 
+def add_tab(a, category, tab_name, rows, name_ptr, params_ptr):
+    # categories[id] = new Object(); .name = tab_name; .settings = [id+1, ...]
+    a.var('categories'); a.int_(category); a.int_(0); a.const('Object'); a.op(0x40); a.op(0x4F)
+    a.var('categories'); a.int_(category); a.op(0x4E); a.const('name'); a.const(tab_name); a.op(0x4F)
+    a.var('categories'); a.int_(category); a.op(0x4E); a.const('settings')
+    ids = [category + 1 + i for i in range(len(rows))]
+    for sid in reversed(ids): a.int_(sid)
+    a.int_(len(ids)); a.op(0x42); a.op(0x4F)
+    # initSettings(id, title, "toggle", labelsFn, valuesFn, true)
+    for sid, (title, labels) in zip(ids, rows):
+        a.op(0x73)                                                    # isEnabled = true
+        def values_body(n=len(labels)):
+            for v in reversed(range(n)): a.int_(v)
+            a.int_(n); a.const('Array'); a.op(0x40); a.op(0x3E)
+        def labels_body(ls=labels):
+            for s in reversed(ls): a.const(s)
+            a.int_(len(ls)); a.const('Array'); a.op(0x40); a.op(0x3E)
+        a.function(values_body, name_ptr, params_ptr)
+        a.function(labels_body, name_ptr, params_ptr)
+        a.const('toggle'); a.const(title); a.int_(sid); a.int_(6); a.byte_op(0xB0, 'initSettings')
+    # context[Settings.eContext.X].push(id)
+    for c in CONTEXTS:
+        a.int_(category); a.int_(1)
+        a.var('context'); a.op(0x71); a.member('Settings'); a.member('eContext'); a.member(c); a.op(0x4E)
+        a.byte_op(0xB2, 'push')
+
+
 def patch_apt(data, const):
     data = bytearray(data); const = bytearray(const)
     # --- constant file: append strings + a new, longer items array
     n_items, items_off = u32(const, 0x18), u32(const, 0x1C)
     items = bytearray(const[items_off:items_off + n_items * 8])
     strings = {}
-    names = [] if COPY_ONLY else [TAB_NAME] + [t for t, _ in ROWS] + [l for _, ls in ROWS for l in ls]
+    names = [] if COPY_ONLY else [s for _, name, rows in TABS
+                                  for s in [name] + [t for t, _ in rows] + [l for _, ls in rows for l in ls]]
     for s in dict.fromkeys(names):
         strings[s] = len(const); const += s.encode('latin1') + b'\0'
     while len(const) % 4: const.append(0)
@@ -183,30 +225,8 @@ def patch_apt(data, const):
         data[new + patch_at:new + patch_at + 8] = p32(pool_n) + p32(idx_ptr)
         data[act_item + 4:act_item + 8] = p32(new)
         return bytes(data), bytes(const), new
-    # categories[200] = new Object(); .name = "DISPLAY"; .settings = [201, ...]
-    a.var('categories'); a.int_(CATEGORY); a.int_(0); a.const('Object'); a.op(0x40); a.op(0x4F)
-    a.var('categories'); a.int_(CATEGORY); a.op(0x4E); a.const('name'); a.const(TAB_NAME); a.op(0x4F)
-    a.var('categories'); a.int_(CATEGORY); a.op(0x4E); a.const('settings')
-    ids = [CATEGORY + 1 + i for i in range(len(ROWS))]
-    for sid in reversed(ids): a.int_(sid)
-    a.int_(len(ids)); a.op(0x42); a.op(0x4F)
-    # initSettings(id, title, "toggle", labelsFn, valuesFn, true)
-    for sid, (title, labels) in zip(ids, ROWS):
-        a.op(0x73)                                                    # isEnabled = true
-        def values_body(n=len(labels)):
-            for v in reversed(range(n)): a.int_(v)
-            a.int_(n); a.const('Array'); a.op(0x40); a.op(0x3E)
-        def labels_body(ls=labels):
-            for s in reversed(ls): a.const(s)
-            a.int_(len(ls)); a.const('Array'); a.op(0x40); a.op(0x3E)
-        a.function(values_body, name_ptr, params_ptr)
-        a.function(labels_body, name_ptr, params_ptr)
-        a.const('toggle'); a.const(title); a.int_(sid); a.int_(6); a.byte_op(0xB0, 'initSettings')
-    # context[Settings.eContext.X].push(200)
-    for c in CONTEXTS:
-        a.int_(CATEGORY); a.int_(1)
-        a.var('context'); a.op(0x71); a.member('Settings'); a.member('eContext'); a.member(c); a.op(0x4E)
-        a.byte_op(0xB2, 'push')
+    for category, tab_name, rows in TABS:
+        add_tab(a, category, tab_name, rows, name_ptr, params_ptr)
     a.op(0x00)                                                        # End
     data += a.b
     while len(data) % 4: data.append(0)
@@ -218,8 +238,22 @@ def patch_apt(data, const):
     return bytes(data), bytes(const), new
 
 
+def update_toc(toc, old_size, new_size):
+    """dlc.toc: "DLC_TOC_", u32 version, u32 count, then {u64 name hash, u32 size} per file."""
+    with open(toc, 'r+b') as f:
+        t = bytearray(f.read())
+        assert t[:8] == b'DLC_TOC_', toc
+        n = u32(t, 12)
+        hits = [16 + 12 * k + 8 for k in range(n) if u32(t, 16 + 12 * k + 8) == old_size]
+        assert len(hits) == 1, f'{toc}: expected one entry of size {old_size}, found {len(hits)}'
+        t[hits[0]:hits[0] + 4] = p32(new_size)
+        f.seek(0); f.write(t)
+    print(f'{toc}: size {old_size} -> {new_size}')
+
+
 def main():
     fe = sys.argv[1]
+    toc = sys.argv[sys.argv.index('--toc') + 1] if '--toc' in sys.argv else None
     orig = fe + '.orig'
     if not os.path.exists(orig):
         print('backing up', fe, '->', orig); shutil.copyfile(fe, orig)
@@ -250,6 +284,10 @@ def main():
         f.seek(0x1C); hdr_size = u32(f.read(4), 0)
         if hdr_size == end:  # EB header field 0x1C = archive size
             f.seek(0x1C); f.write(p32(new_size))
+    if toc:  # always from the original toc, like the archive
+        if not os.path.exists(toc + '.orig'): shutil.copyfile(toc, toc + '.orig')
+        shutil.copyfile(toc + '.orig', toc)
+        update_toc(toc, os.path.getsize(orig), new_size)
     os.replace(fe + '.tmp', fe)
     print(f'patched {MEMBER}: new frame action @0x{new:X}, {len(out)} ops; member @0x{at:X} size {len(newbig)}')
     print(f'check: {read_index(fe)[i]}')

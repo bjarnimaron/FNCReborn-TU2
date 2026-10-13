@@ -3,16 +3,22 @@
   "game": "Fight Night Champion",
   "system": "Xbox 360",
   "type": "recomp",
-  "original": { "region": "USA, Europe", "revision": "1.0" },
-  "project": "FNC Reborn",
+  "original": {
+    "region": "USA, Europe",
+    "revision": "1.0 + Title Update 2",
+    "sha1": "498796AF783F0D598BBDA166B6BC8D518EDF8428"
+  },
+  "project": "FNC Reborn – TU2 + DLC",
   "status": "playable",
   "targets": ["Windows"],
   "toolchain": "ReXGlue SDK",
-  "approach": "Static recompilation of the PowerPC code to x86-64, Direct3D 12 renderer",
-  "maintainers": [{ "name": "whompay", "link": "https://github.com/whompay" }],
+  "approach": "Static recompilation of the PowerPC code (with title update 2 applied) to x86-64, Direct3D 12 renderer",
+  "maintainers": [{ "name": "bjarnimaron", "link": "https://github.com/bjarnimaron" }],
   "links": [
-    { "label": "GitHub", "url": "https://github.com/whompay/FNCReborn" }
+    { "label": "GitHub", "url": "https://github.com/bjarnimaron/FNCReborn-TU2" },
+    { "label": "Based on FNC Reborn by Whompay", "url": "https://github.com/whompay/FNCReborn" }
   ],
-  "help": ["Testing on older and low-end PCs"],
-  "notes": "Menus, Fight Now, Legacy and Champion modes, Create a Fighter and saves work, with sound, 60 FPS and higher, a Settings > DISPLAY tab and a camera behind your boxer. Built from your own disc; the repository contains no game code or data."
+  "help": ["Testing on older and low-end PCs", "Testing with other DLC collections"],
+  "tags": ["fork", "dlc"],
+  "notes": "A fork of FNC Reborn built with title update 2. All DLC works offline: the Legends Pack (boxers, venues, Bare Knuckles Mode), Champion Mode boxers, boosts, XP packs and licensed gear. Raises the Legacy Mode skill level cap, adds a Settings > EXTRAS tab and restores instant replays. Built from your own disc, title update and DLC; the repository contains no game code or data."
 }
